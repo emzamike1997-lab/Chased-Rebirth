@@ -6,6 +6,11 @@
 let cart = [];
 let cartCount = 0;
 
+// Supabase Configuration
+const supabaseUrl = 'https://duhesaxygyxshmevovuj.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1aGVzYXh5Z3l4c2htZXZvdnVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgzMDUzMzYsImV4cCI6MjA4Mzg4MTMzNn0.O9-gA8GhD08sD3kV_DtjNf6Yitdtxl42V5HU6Q6vn8w';
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
 // Image viewer state
 let currentRotation = 0;
 let currentZoom = 1;
@@ -14,12 +19,12 @@ let currentZoom = 1;
 document.addEventListener('DOMContentLoaded', () => {
     initializeSidebar();
     initializeCart();
-    initializeAuth();
     initializeSellMenu();
     initializeImageViewer();
     initializeNavigation();
     initializeHeaderSearch();
     initializeProfileForms();
+
     initializeProductCategories();
     initializeHeaderInteractions();
     initializeMobileCart();
@@ -260,27 +265,7 @@ function removeFromCart(index) {
     updateCartDisplay();
 }
 
-// ===================================
-// USER AUTHENTICATION
-// ===================================
-function initializeAuth() {
-    // Profile link now uses navigation system
-    // No need for separate auth modal
-}
 
-function handleLogin() {
-    const email = document.getElementById('auth-email').value;
-    const password = document.getElementById('auth-password').value;
-
-    if (email && password) {
-        alert('Login successful!');
-        document.getElementById('auth-modal').classList.remove('active');
-    }
-}
-
-function handleCreateAccount() {
-    alert('Create Account feature coming soon!');
-}
 
 // ===================================
 // SELL MENU
@@ -736,8 +721,10 @@ function initializeHeaderSearch() {
 // PROFILE FORMS (Login/Create Account)
 // ===================================
 function initializeProfileForms() {
+    console.log('CHASED: Initializing profile forms...');
     const loginTab = document.getElementById('login-tab');
     const signupTab = document.getElementById('signup-tab');
+
     const loginForm = document.getElementById('login-form-container');
     const signupForm = document.getElementById('signup-form-container');
 
@@ -761,31 +748,100 @@ function initializeProfileForms() {
     // Handle login form submission
     const loginFormElement = document.getElementById('profile-login-form');
     if (loginFormElement) {
-        loginFormElement.addEventListener('submit', (e) => {
+        loginFormElement.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value;
-            alert(`Login successful for ${email}!`);
+            const password = document.getElementById('login-password').value;
+            const submitBtn = loginFormElement.querySelector('button[type="submit"]');
+
+            submitBtn.textContent = 'Logging in...';
+            submitBtn.disabled = true;
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
+
+            if (data.user) {
+                alert(`Welcome back, ${data.user.email}!`);
+                updateUserUI(data.user);
+            } else {
+                alert(`Login failed: ${error.message}`);
+                submitBtn.textContent = 'Login';
+                submitBtn.disabled = false;
+            }
         });
     }
 
     // Handle signup form submission
     const signupFormElement = document.getElementById('profile-signup-form');
+    console.log('CHASED: Signup form element:', signupFormElement);
     if (signupFormElement) {
-        signupFormElement.addEventListener('submit', (e) => {
+        signupFormElement.addEventListener('submit', async (e) => {
+            console.log('CHASED: Signup form submitted');
             e.preventDefault();
+
             const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
             const password = document.getElementById('signup-password').value;
             const confirm = document.getElementById('signup-confirm').value;
+            const submitBtn = signupFormElement.querySelector('button[type="submit"]');
 
             if (password !== confirm) {
                 alert('Passwords do not match!');
                 return;
             }
 
-            alert(`Account created successfully for ${name}!`);
+            submitBtn.textContent = 'Creating account...';
+            submitBtn.disabled = true;
+
+            try {
+                console.log('CHASED: Calling Supabase signUp...');
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email,
+                    password,
+                    options: { data: { full_name: name } }
+                });
+                if (error) throw error;
+                console.log('CHASED: Supabase response:', data);
+                alert('Account created! Please check your email for the confirmation link.');
+                signupFormElement.reset();
+            } catch (err) {
+                console.error('CHASED: Signup error:', err);
+                alert(`Signup failed: ${err.message}`);
+            } finally {
+                submitBtn.textContent = 'Create Account';
+                submitBtn.disabled = false;
+            }
         });
     }
 }
+
+// Add helper to update UI with user info
+function updateUserUI(user) {
+    console.log('CHASED: Updating User UI for:', user);
+    const profileContainer = document.querySelector('.profile-container');
+
+    if (profileContainer) {
+        profileContainer.innerHTML = `
+            <div class="header">
+                <h1 class="header-title">Welcome, ${user.user_metadata.full_name || user.email}</h1>
+                <p class="header-subtitle">You are now logged in to your CHASED account</p>
+            </div>
+            <div class="user-details" style="margin-top: 2rem; padding: 2rem; background: rgba(255,255,255,0.05); border-radius: 12px;">
+                <p><strong>Email:</strong> ${user.email}</p>
+                <button class="btn btn-secondary" style="margin-top: 1rem;" onclick="handleLogout()">Logout</button>
+            </div>
+        `;
+    }
+}
+
+async function handleLogout() {
+    await supabaseClient.auth.signOut();
+    location.reload(); // Quickest way to reset UI
+}
+
+window.handleLogout = handleLogout;
 
 // ===================================
 // PRODUCT CATEGORIES (Dresses, Footwear, Tops, Pants)
