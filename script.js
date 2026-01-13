@@ -9,7 +9,20 @@ let cartCount = 0;
 // Supabase Configuration
 const supabaseUrl = 'https://duhesaxygyxshmevovuj.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1aGVzYXh5Z3l4c2htZXZvdnVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgzMDUzMzYsImV4cCI6MjA4Mzg4MTMzNn0.O9-gA8GhD08sD3kV_DtjNf6Yitdtxl42V5HU6Q6vn8w';
-const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+let supabaseClient = null;
+
+try {
+    if (typeof supabase !== 'undefined') {
+        supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+        console.log('CHASED: Supabase initialized successfully');
+    } else {
+        console.error('CHASED: Supabase SDK not found! Check Internet or CDN.');
+        alert('System Error: Database connection failed (Supabase SDK missing). Please refresh.');
+    }
+} catch (err) {
+    console.error('CHASED: checking supabase failed', err);
+}
 
 // Image viewer state
 let currentRotation = 0;
@@ -31,6 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Set home section as default landing page
     navigateToSection('home');
+
+    console.log('CHASED: System Ready');
 });
 
 function initializeMobileCart() {
@@ -786,7 +801,7 @@ function initializeProfileForms() {
     // Handle signup form submission
     const signupFormElement = document.getElementById('profile-signup-form');
     console.log('CHASED: Signup form element found:', !!signupFormElement);
-    
+
     if (signupFormElement) {
         signupFormElement.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -810,30 +825,30 @@ function initializeProfileForms() {
             try {
                 console.log('CHASED: Calling Supabase signUp...');
                 // Get current URL origin for redirect
-                const redirectUrl = window.location.origin; 
+                const redirectUrl = window.location.origin;
                 console.log('CHASED: Redirect URL set to:', redirectUrl);
 
                 const { data, error } = await supabaseClient.auth.signUp({
                     email,
                     password,
-                    options: { 
+                    options: {
                         data: { full_name: name },
                         emailRedirectTo: redirectUrl
                     }
                 });
                 if (error) throw error;
-                
+
                 console.log('CHASED: Supabase response:', data);
-                
+
                 if (data.session) {
                     // User is auto-logged in (rare with email confirm on, but possible)
                     alert('Account created and logged in!');
                     updateUserUI(data.user);
                 } else if (data.user) {
-                     // User created but needs email confirmation
+                    // User created but needs email confirmation
                     alert(`Account created! IMPORTANT: Please check ${email} for the confirmation link to activate your account.`);
                 }
-                
+
                 signupFormElement.reset();
             } catch (err) {
                 console.error('CHASED: Signup error:', err);
