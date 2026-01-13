@@ -750,9 +750,17 @@ function initializeProfileForms() {
     if (loginFormElement) {
         loginFormElement.addEventListener('submit', async (e) => {
             e.preventDefault();
+            console.log('CHASED: Login submit triggered');
+            alert('Debug: Login process initiated...'); // DEBUG ALERT
+
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
             const submitBtn = loginFormElement.querySelector('button[type="submit"]');
+
+            if (!supabaseClient) {
+                alert('Critical Error: Supabase client not initialized!');
+                return;
+            }
 
             submitBtn.textContent = 'Logging in...';
             submitBtn.disabled = true;
@@ -763,9 +771,11 @@ function initializeProfileForms() {
             });
 
             if (data.user) {
-                alert(`Welcome back, ${data.user.email}!`);
+                console.log('CHASED: Login successful', data.user);
+                alert(`Success: Welcome back, ${data.user.email}!`);
                 updateUserUI(data.user);
             } else {
+                console.error('CHASED: Login error', error);
                 alert(`Login failed: ${error.message}`);
                 submitBtn.textContent = 'Login';
                 submitBtn.disabled = false;
@@ -775,11 +785,13 @@ function initializeProfileForms() {
 
     // Handle signup form submission
     const signupFormElement = document.getElementById('profile-signup-form');
-    console.log('CHASED: Signup form element:', signupFormElement);
+    console.log('CHASED: Signup form element found:', !!signupFormElement);
+    
     if (signupFormElement) {
         signupFormElement.addEventListener('submit', async (e) => {
-            console.log('CHASED: Signup form submitted');
             e.preventDefault();
+            console.log('CHASED: Signup submit triggered');
+            alert('Debug: Create Account process initiated...'); // DEBUG ALERT
 
             const name = document.getElementById('signup-name').value;
             const email = document.getElementById('signup-email').value;
@@ -797,14 +809,31 @@ function initializeProfileForms() {
 
             try {
                 console.log('CHASED: Calling Supabase signUp...');
+                // Get current URL origin for redirect
+                const redirectUrl = window.location.origin; 
+                console.log('CHASED: Redirect URL set to:', redirectUrl);
+
                 const { data, error } = await supabaseClient.auth.signUp({
                     email,
                     password,
-                    options: { data: { full_name: name } }
+                    options: { 
+                        data: { full_name: name },
+                        emailRedirectTo: redirectUrl
+                    }
                 });
                 if (error) throw error;
+                
                 console.log('CHASED: Supabase response:', data);
-                alert('Account created! Please check your email for the confirmation link.');
+                
+                if (data.session) {
+                    // User is auto-logged in (rare with email confirm on, but possible)
+                    alert('Account created and logged in!');
+                    updateUserUI(data.user);
+                } else if (data.user) {
+                     // User created but needs email confirmation
+                    alert(`Account created! IMPORTANT: Please check ${email} for the confirmation link to activate your account.`);
+                }
+                
                 signupFormElement.reset();
             } catch (err) {
                 console.error('CHASED: Signup error:', err);
