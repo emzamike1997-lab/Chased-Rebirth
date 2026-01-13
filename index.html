@@ -1,0 +1,2026 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHASED - Premium Footwear & Bags</title>
+    <link rel="stylesheet" href="INTRO.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="brand">
+            <div class="brand-icon">C</div>
+            <span class="brand-name">CHASED</span>
+        </div>
+
+        <nav class="header-nav desktop-nav">
+            <a href="#" class="nav-link" data-section="home">Home</a>
+            <a href="#" class="nav-link" id="help-link">Help</a>
+            <a href="#" class="nav-link" id="contact-link">Contact</a>
+            <a href="#" class="nav-link" data-section="profile">Profile</a>
+            <div class="header-search" id="header-search">
+                <i class="fas fa-search search-icon" id="search-toggle"></i>
+                <input type="text" class="search-input" id="search-input" placeholder="Search products...">
+            </div>
+        </nav>
+
+        <nav class="header-nav mobile-nav">
+            <a href="#" class="mobile-nav-link" data-section="home">HOME</a>
+            <a href="#" class="mobile-nav-link" id="mobile-help-link">HELP</a>
+            <a href="#" class="mobile-nav-link" id="mobile-contact-link">CONTACT</a>
+            <a href="#" class="mobile-nav-link" data-section="profile">PROFILE</a>
+            <div class="header-search mobile-search" id="mobile-header-search">
+                <i class="fas fa-search mobile-search-icon" id="mobile-search-toggle"></i>
+                <input type="text" class="search-input" id="mobile-search-input" placeholder="Search...">
+                <i class="fas fa-times mobile-search-close" id="mobile-search-close"></i>
+            </div>
+        </nav>
+    </header>
+
+
+    <div class="app-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Navigation</h2>
+            </div>
+            <ul class="nav-menu">
+                <!-- Profile at Top -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="profile">
+                        <i class="fas fa-user nav-icon"></i>
+                        <span>Profile</span>
+                        <span class="nav-tooltip">Login / Account</span>
+                    </a>
+                </li>
+
+                <!-- Separator -->
+                <li class="nav-separator"></li>
+
+                <!-- Main Navigation Sections -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link active" data-section="buy">
+                        <i class="fas fa-shopping-bag nav-icon"></i>
+                        <span>Buy</span>
+                        <span class="nav-tooltip">Browse products</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="sell">
+                        <i class="fas fa-tag nav-icon"></i>
+                        <span>Sell</span>
+                        <span class="nav-tooltip">Sell your items</span>
+                    </a>
+                </li>
+
+                <!-- Separator -->
+                <li class="nav-separator"></li>
+
+                <!-- Other Navigation Items -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-th-large nav-icon"></i>
+                        <span>Catalog</span>
+                        <span class="nav-tooltip">View all products</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-heart nav-icon"></i>
+                        <span>Wishlist</span>
+                        <span class="nav-tooltip">Saved items</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <button class="pop-button" id="popButton" title="Toggle Sidebar">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <main class="main-content" id="mainContent">
+            <!-- HOME SECTION -->
+            <section class="content-section" id="home-section" style="display: none;">
+                <div class="home-hero">
+                    <div class="hero-content">
+                        <h1 class="hero-title">Welcome to CHASED</h1>
+                        <p class="hero-subtitle">chase the ideal beauty</p>
+                        <p class="hero-description">
+                            Discover premium boots and bags crafted for the modern woman.<br>
+                            Explore our exclusive collection of luxury footwear and accessories.
+                        </p>
+                        <div class="hero-actions">
+                            <button class="btn btn-primary hero-btn" onclick="navigateToSection('buy')">Shop
+                                Now</button>
+                            <button class="btn btn-secondary hero-btn" onclick="navigateToSection('sell')">Start
+                                Selling</button>
+                        </div>
+                    </div>
+                    <div class="hero-features">
+                        <div class="feature-card">
+                            <i class="fas fa-shipping-fast feature-icon"></i>
+                            <h3>Free Shipping</h3>
+                            <p>On orders over £50</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-shield-alt feature-icon"></i>
+                            <h3>Secure Payment</h3>
+                            <p>100% protected transactions</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-undo feature-icon"></i>
+                            <h3>Easy Returns</h3>
+                            <p>30-day return policy</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PROFILE SECTION (Login/Create Account) -->
+            <section class="content-section" id="profile-section" style="display: none;">
+                <div class="profile-container">
+                    <div class="header">
+                        <h1 class="header-title">Your Account</h1>
+                        <p class="header-subtitle">Login or create a new account to get started</p>
+                    </div>
+
+                    <div class="auth-tabs">
+                        <button class="auth-tab active" id="login-tab">Login</button>
+                        <button class="auth-tab" id="signup-tab">Create Account</button>
+                    </div>
+
+                    <!-- Login Form -->
+                    <div class="auth-form-container" id="login-form-container">
+                        <form class="profile-form" id="profile-login-form">
+                            <div class="form-group">
+                                <label for="login-email">Email Address</label>
+                                <input type="email" id="login-email" class="form-input" placeholder="your@email.com"
+                                    required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="login-password">Password</label>
+                                <input type="password" id="login-password" class="form-input"
+                                    placeholder="Enter your password" required>
+                            </div>
+
+                            <div class="form-options">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="remember-me">
+                                    <span>Remember me</span>
+                                </label>
+                                <a href="#" class="forgot-password">Forgot Password?</a>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-full">Login</button>
+                        </form>
+                    </div>
+
+                    <!-- Create Account Form -->
+                    <div class="auth-form-container" id="signup-form-container" style="display: none;">
+                        <form class="profile-form" id="profile-signup-form">
+                            <div class="form-group">
+                                <label for="signup-name">Full Name</label>
+                                <input type="text" id="signup-name" class="form-input" placeholder="John Doe" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="signup-email">Email Address</label>
+                                <input type="email" id="signup-email" class="form-input" placeholder="your@email.com"
+                                    required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="signup-password">Password</label>
+                                <input type="password" id="signup-password" class="form-input"
+                                    placeholder="Create a strong password" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="signup-confirm">Confirm Password</label>
+                                <input type="password" id="signup-confirm" class="form-input"
+                                    placeholder="Re-enter your password" required>
+                            </div>
+
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="terms-agree" required>
+                                <span>I agree to the Terms of Service and Privacy Policy</span>
+                            </label>
+
+                            <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BUY SECTION (Products) -->
+            <section class="content-section active" id="buy-section">
+                <div class="header">
+                    <h1 class="header-title">Elevate Your Style</h1>
+                    <p class="header-subtitle">chase the ideal beauty</p>
+                </div>
+
+                <!-- Product Categories -->
+                <div class="product-categories">
+                    <button class="category-tab" id="dresses-tab" data-category="dresses">DRESSES</button>
+                    <button class="category-tab" id="footwear-tab" data-category="footwear">FOOTWEAR</button>
+                    <button class="category-tab" id="tops-tab" data-category="tops">TOPS</button>
+                    <button class="category-tab" id="jewelry-tab" data-category="jewelry">JEWELRY</button>
+                    <button class="category-tab" id="pants-tab" data-category="pants">PANTS</button>
+                </div>
+
+                <!-- Default Message (when no category selected) -->
+                <div class="category-placeholder" id="category-placeholder">
+                    <div class="placeholder-content">
+                        <i class="fas fa-arrow-up placeholder-icon"></i>
+                        <h3>Select a Category</h3>
+                        <p>Click on one of the categories above to browse our collection</p>
+                    </div>
+                </div>
+
+                <!-- DRESSES Category -->
+                <div class="category-content" id="dresses-category" style="display: none;">
+                    <div class="product-grid">
+                        <!-- Product 1: AI Generated -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="assets/dresses/silk_evening_gown_red_1767785862153.png"
+                                    alt="Scarlet Silk Gown" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">Exclusive</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Scarlet Silk Gown</h3>
+                                    <p class="product-description">Floor-length red silk with elegant draping for gala
+                                        nights.</p>
+                                </div>
+                                <span class="product-price">£350</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 2: AI Generated -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="assets/dresses/floral_summer_midi_dress_1767785875776.png"
+                                    alt="Azure Floral Midi" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Azure Floral Midi</h3>
+                                    <p class="product-description">Light and breezy summer midi dress with blue floral
+                                        prints.</p>
+                                </div>
+                                <span class="product-price">£125</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 3: AI Generated -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="assets/dresses/velvet_cocktail_dress_black_short_1767785892075.png"
+                                    alt="Midnight Velvet Mini" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">Top Seller</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Midnight Velvet Mini</h3>
+                                    <p class="product-description">Chic one-shoulder velvet cocktail dress in deep
+                                        black.</p>
+                                </div>
+                                <span class="product-price">£180</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 4: AI Generated -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="assets/dresses/bohemian_maxi_dress_white_lace_1767785905859.png"
+                                    alt="Ivory Lace Boho" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Ivory Lace Boho</h3>
+                                    <p class="product-description">Romantic white lace maxi dress with bohemian tiered
+                                        skirts.</p>
+                                </div>
+                                <span class="product-price">£210</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 5: AI Generated -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="assets/dresses/satin_slip_dress_emerald_green_1767785920474.png"
+                                    alt="Emerald Satin Slip" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Emerald Satin Slip</h3>
+                                    <p class="product-description">Minimalist liquid-silk slip dress in vibrant emerald
+                                        green.</p>
+                                </div>
+                                <span class="product-price">£145</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 6: AI Generated -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="assets/dresses/embellished_tulle_gown_blush_1767785946658.png"
+                                    alt="Blush Tulle Fantasy" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">Couture</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Blush Tulle Fantasy</h3>
+                                    <p class="product-description">Intricately embellished ball gown with layers of soft
+                                        blush tulle.</p>
+                                </div>
+                                <span class="product-price">£850</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 7: Stock -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=400"
+                                    alt="Noir Evening Wrap" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Noir Evening Wrap</h3>
+                                    <p class="product-description">Classic black wrap dress that transitions perfectly
+                                        from day to night.</p>
+                                </div>
+                                <span class="product-price">£115</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 8: Stock -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://picsum.photos/seed/sienna-pleated-dress/400/600"
+                                    alt="Sienna Pleated Dress" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Sienna Pleated Dress</h3>
+                                    <p class="product-description">Accordion-pleated midi dress in a warm terracotta
+                                        hue.</p>
+                                </div>
+                                <span class="product-price">£160</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 9: Stock -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&q=80&w=400"
+                                    alt="Regency Satin Gown" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">New</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Regency Satin Gown</h3>
+                                    <p class="product-description">Structured satin gown with a modern square neckline.
+                                    </p>
+                                </div>
+                                <span class="product-price">£290</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 10: Stock -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://picsum.photos/seed/modernist-linen/400/600"
+                                    alt="Modernist Linen Dress" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Modernist Linen Dress</h3>
+                                    <p class="product-description">Clean-cut white linen dress crafted for ultimate
+                                        summer comfort.</p>
+                                </div>
+                                <span class="product-price">£95</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 11: Stock -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&q=80&w=400"
+                                    alt="Celestial Dot Maxi" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Celestial Dot Maxi</h3>
+                                    <p class="product-description">Flowing navy maxi dress with delicate silver polka
+                                        dots.</p>
+                                </div>
+                                <span class="product-price">£155</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 12: Stock -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://picsum.photos/seed/parisian-knit/400/600" alt="Parisian Knit Midi"
+                                    class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Parisian Knit Midi</h3>
+                                    <p class="product-description">Form-fitting ribbed knit dress in a neutral almond
+                                        shade.</p>
+                                </div>
+                                <span class="product-price">£135</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 13: Stock -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://picsum.photos/seed/starlight-sequin/400/600"
+                                    alt="Starlight Sequin Dress" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">Limited</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Starlight Sequin Dress</h3>
+                                    <p class="product-description">Dazzling champagne sequin bodycon for the spotlight.
+                                    </p>
+                                </div>
+                                <span class="product-price">£220</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 14: Stock -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://picsum.photos/seed/victorian-tiered/400/600"
+                                    alt="Victorian Tiered Dress" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Victorian Tiered Dress</h3>
+                                    <p class="product-description">Vintage-inspired high-neck dress with tiered lace
+                                        detailing.</p>
+                                </div>
+                                <span class="product-price">£195</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 15: Stock -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://picsum.photos/seed/amethyst-chiffon/400/600" alt="Amethyst Chiffon"
+                                    class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Amethyst Chiffon</h3>
+                                    <p class="product-description">Floating purple chiffon dress with delicate pleats.
+                                    </p>
+                                </div>
+                                <span class="product-price">£175</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FOOTWEAR Category -->
+                <div class="category-content" id="footwear-category" style="display: none;">
+                    <div class="product-grid">
+                        <!-- Product 1 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="assets/footwear/luxury_leather_boots_1767784924591.png"
+                                    alt="Aura Leather Boots" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">Top Rated</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Aura Leather Boots</h3>
+                                    <p class="product-description">Premium black leather ankle boots with elegant gold
+                                        accents.</p>
+                                </div>
+                                <span class="product-price">£180</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 2 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="assets/footwear/designer_heels_gold_1767784939295.png"
+                                    alt="Solstice Gold Heels" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">Trending</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Solstice Gold Heels</h3>
+                                    <p class="product-description">Elegant strappy gold heels for gala evenings and red
+                                        carpets.</p>
+                                </div>
+                                <span class="product-price">£220</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 3 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="assets/footwear/casual_leather_sneakers_1767784954022.png"
+                                    alt="Cloud Step Sneaker" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Cloud Step Sneaker</h3>
+                                    <p class="product-description">Ultra-minimalist white leather sneakers for all-day
+                                        comfort.</p>
+                                </div>
+                                <span class="product-price">£110</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 4 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="assets/footwear/suede_chelsea_boots_1767784967858.png" alt="Heritage Chelsea"
+                                    class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Heritage Chelsea</h3>
+                                    <p class="product-description">Classic tan suede chelsea boots with a refined
+                                        silhouette.</p>
+                                </div>
+                                <span class="product-price">£165</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 5 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="assets/footwear/velvet_evening_pumps_1767784981388.png"
+                                    alt="Emerald Night Pump" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">Limited</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Emerald Night Pump</h3>
+                                    <p class="product-description">Deep green velvet pointed-toe pumps for a pop of
+                                        luxury.</p>
+                                </div>
+                                <span class="product-price">£195</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 6 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="assets/footwear/platform_sandals_black_1767785004243.png" alt="Nova Platform"
+                                    class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Nova Platform</h3>
+                                    <p class="product-description">Bold black leather platform sandals with
+                                        architectural lines.</p>
+                                </div>
+                                <span class="product-price">£140</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 7 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="assets/footwear/patent_leather_loafers_1767785019878.png"
+                                    alt="Sovereign Loafer" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Sovereign Loafer</h3>
+                                    <p class="product-description">Polished black patent leather loafers for a
+                                        sophisticated look.</p>
+                                </div>
+                                <span class="product-price">£155</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 8 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="assets/footwear/embroidered_mules_1767785034938.png" alt="Silk Blossom Mule"
+                                    class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Silk Blossom Mule</h3>
+                                    <p class="product-description">Exquisite embroidered silk mules in a soft cream
+                                        palette.</p>
+                                </div>
+                                <span class="product-price">£130</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 9 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="assets/footwear/knee_high_suede_boots_1767785047882.png"
+                                    alt="Stellar Suede High" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">Bestseller</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Stellar Suede High</h3>
+                                    <p class="product-description">Sleek black suede knee-high boots with a tailored
+                                        fit.</p>
+                                </div>
+                                <span class="product-price">£240</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 10 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="assets/footwear/woven_leather_slides_neutral_1767785062814.png"
+                                    alt="Sahara Woven Slide" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Sahara Woven Slide</h3>
+                                    <p class="product-description">Intricate woven leather slides in a natural desert
+                                        tone.</p>
+                                </div>
+                                <span class="product-price">£95</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 11 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="assets/footwear/metallic_pumps_silver_1767785087680.png"
+                                    alt="Lunar Metallic Pump" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Lunar Metallic Pump</h3>
+                                    <p class="product-description">High-shine silver metallic pumps that catch every
+                                        light.</p>
+                                </div>
+                                <span class="product-price">£185</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 12 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="assets/footwear/suede_loafers_navy_1767785103225.png" alt="Azure Suede Loafer"
+                                    class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Azure Suede Loafer</h3>
+                                    <p class="product-description">Rich navy blue suede loafers with a classic buckle
+                                        detail.</p>
+                                </div>
+                                <span class="product-price">£150</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 13 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="assets/footwear/strappy_stiletto_sandals_black_1767785118125.png"
+                                    alt="Midnight Stiletto" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">New</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Midnight Stiletto</h3>
+                                    <p class="product-description">Sharp black strappy stiletto sandals for a daring
+                                        edge.</p>
+                                </div>
+                                <span class="product-price">£210</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 14 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="assets/footwear/pointed_toe_flats_nude_1767785131976.png"
+                                    alt="Nude Ribbon Flat" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Nude Ribbon Flat</h3>
+                                    <p class="product-description">Minimalist nude pointed-toe flats with a dainty bow.
+                                    </p>
+                                </div>
+                                <span class="product-price">£85</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 15 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="assets/footwear/chunk_sole_chelsea_boots_white_1767785147041.png"
+                                    alt="Arctic Chunk Boot" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Arctic Chunk Boot</h3>
+                                    <p class="product-description">Modern white leather boots with a rugged black sole.
+                                    </p>
+                                </div>
+                                <span class="product-price">£200</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TOPS Category -->
+                <div class="category-content" id="tops-category" style="display: none;">
+                    <div class="product-grid">
+                        <!-- Product 1 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1604176354204-ad2819cd33a0?auto=format&fit=crop&q=80&w=400"
+                                    alt="Luxe Silk Camisole" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">Premium</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Luxe Silk Camisole</h3>
+                                    <p class="product-description">Pure mulberry silk camisole with delicate lace trim.
+                                    </p>
+                                </div>
+                                <span class="product-price">£65</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 2 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&q=80&w=400"
+                                    alt="Cashmere Sweater" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">Soft Touch</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Cashmere Oversized Knit</h3>
+                                    <p class="product-description">Luxuriously soft oversized sweater in toasted almond.
+                                    </p>
+                                </div>
+                                <span class="product-price">£145</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 3 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&q=80&w=400"
+                                    alt="Linen Shirt" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Tailored Linen Shirt</h3>
+                                    <p class="product-description">Crisp white linen shirt with a modern relaxed fit.
+                                    </p>
+                                </div>
+                                <span class="product-price">£85</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 4 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1583743814966-8933f1b0ee2a?auto=format&fit=crop&q=80&w=400"
+                                    alt="Ribbed Bodysuit" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Ribbed Knit Bodysuit</h3>
+                                    <p class="product-description">Sculpting ribbed knit with a sleek turtleneck finish.
+                                    </p>
+                                </div>
+                                <span class="product-price">£45</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 5 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1551163943-3f6a855d1153?auto=format&fit=crop&q=80&w=400"
+                                    alt="Chiffon Blouse" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Sheer Chiffon Blouse</h3>
+                                    <p class="product-description">Ethereal sheer blouse with delicate bishop sleeves.
+                                    </p>
+                                </div>
+                                <span class="product-price">£90</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 6 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=400"
+                                    alt="Vintage Tee" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">Retro</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Graphic Vintage Tee</h3>
+                                    <p class="product-description">Premium cotton tee with a faded heritage graphic.</p>
+                                </div>
+                                <span class="product-price">£35</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 7 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1598554747436-c929a75220fa?auto=format&fit=crop&q=80&w=400"
+                                    alt="Bow Blouse" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Satin Bow Blouse</h3>
+                                    <p class="product-description">Elegant satin blouse featuring an adjustable neck
+                                        bow.</p>
+                                </div>
+                                <span class="product-price">£110</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 8 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1523381235312-3a1647fa9921?auto=format&fit=crop&q=80&w=400"
+                                    alt="Breton Stripe" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Classic Breton Stripe</h3>
+                                    <p class="product-description">Timeless nautical stripe top in heavyweight cotton.
+                                    </p>
+                                </div>
+                                <span class="product-price">£55</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 9 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1589131008225-c6513d297193?auto=format&fit=crop&q=80&w=400"
+                                    alt="Victorian Top" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">New Arrival</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Lace Victorian Top</h3>
+                                    <p class="product-description">High-neck top with intricate lace embroidery.</p>
+                                </div>
+                                <span class="product-price">£120</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 10 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&q=80&w=400"
+                                    alt="Knit Vest" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Cable Knit Vest</h3>
+                                    <p class="product-description">Versatile cable knit vest for effortless layering.
+                                    </p>
+                                </div>
+                                <span class="product-price">£75</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 11 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1543076447-215ad9ba6923?auto=format&fit=crop&q=80&w=400"
+                                    alt="Denim Jacket" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Modern Denim Jacket</h3>
+                                    <p class="product-description">Structured denim overshirt with raw hem detail.</p>
+                                </div>
+                                <span class="product-price">£130</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 12 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1516762689617-e1cffcef479d?auto=format&fit=crop&q=80&w=400"
+                                    alt="Velvet Cami" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Velvet Evening Cami</h3>
+                                    <p class="product-description">Plush velvet camisole in a deep charcoal grey.</p>
+                                </div>
+                                <span class="product-price">£60</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 13 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1549439602-43ebca2327af?auto=format&fit=crop&q=80&w=400"
+                                    alt="Organza Top" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">Couture</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Organza Puff Sleeve</h3>
+                                    <p class="product-description">Statement sheer top with voluminous puff sleeves.</p>
+                                </div>
+                                <span class="product-price">£140</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 14 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1554568218-0f1715e72254?auto=format&fit=crop&q=80&w=400"
+                                    alt="Leather Corset" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Sculpted Leather Corset</h3>
+                                    <p class="product-description">Tailored vegan leather corset with structural
+                                        ribbing.</p>
+                                </div>
+                                <span class="product-price">£210</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 15 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1494190146482-eeefa7293e2b?auto=format&fit=crop&q=80&w=400"
+                                    alt="Turtleneck" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Minimalist Turtleneck</h3>
+                                    <p class="product-description">Fine-gauge wool turtleneck in a sleek black finish.
+                                    </p>
+                                </div>
+                                <span class="product-price">£50</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- JEWELRY Category -->
+                <div class="category-content" id="jewelry-category" style="display: none;">
+                    <div class="product-grid">
+                        <!-- Product 1 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.pexels.com/photos/1927259/pexels-photo-1927259.jpeg?auto=compress&cs=tinysrgb&w=400"
+                                    alt="Diamond Ring" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">Top Tier</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Diamond Solitaire Ring</h3>
+                                    <p class="product-description">1.5ct lab-grown diamond set in an 18k white gold
+                                        band.</p>
+                                </div>
+                                <span class="product-price">£1,200</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 2 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.pexels.com/photos/1191531/pexels-photo-1191531.jpeg?auto=compress&cs=tinysrgb&w=400"
+                                    alt="Gold Bracelet" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Gold Link Bracelet</h3>
+                                    <p class="product-description">Heavyweight 14k solid gold chain with a secure
+                                        lobster clasp.</p>
+                                </div>
+                                <span class="product-price">£450</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 3 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.pexels.com/photos/1454171/pexels-photo-1454171.jpeg?auto=compress&cs=tinysrgb&w=400"
+                                    alt="Pearl Earrings" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Pearl Drop Earrings</h3>
+                                    <p class="product-description">Lustrous Tahitian black pearls hanging from silver
+                                        hooks.</p>
+                                </div>
+                                <span class="product-price">£180</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 4 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.pexels.com/photos/1454171/pexels-photo-1454171.jpeg?auto=compress&cs=tinysrgb&w=400&h=500"
+                                    alt="Gold Hoops" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Minimalist Gold Hoops</h3>
+                                    <p class="product-description">Elegant 24k gold plated hoops, perfect for daily
+                                        wear.</p>
+                                </div>
+                                <span class="product-price">£65</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 5 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&q=80&w=400"
+                                    alt="Emerald Necklace" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">New</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Emerald Halo Necklace</h3>
+                                    <p class="product-description">Vibrant green emerald surrounded by a sparkling
+                                        diamond halo.</p>
+                                </div>
+                                <span class="product-price">£850</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 6 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1611085583191-a3b130a8b19e?auto=format&fit=crop&q=80&w=400"
+                                    alt="Silver Cuff" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Hammered Silver Cuff</h3>
+                                    <p class="product-description">Handcrafted sterling silver cuff with a unique
+                                        textured finish.</p>
+                                </div>
+                                <span class="product-price">£110</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 7 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1635767798638-3e2827e84a9b?auto=format&fit=crop&q=80&w=400"
+                                    alt="Sapphire Studs" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Sapphire Stud Studs</h3>
+                                    <p class="product-description">Deep blue round-cut sapphires set in a platinum
+                                        frame.</p>
+                                </div>
+                                <span class="product-price">£320</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 8 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&q=80&w=400"
+                                    alt="Rose Gold Watch" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">Classic</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Minimalist Rose Watch</h3>
+                                    <p class="product-description">Sleek rose gold watch with a premium leather strap.
+                                    </p>
+                                </div>
+                                <span class="product-price">£240</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 9 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&q=80&w=400"
+                                    alt="Celestial Charm" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Celestial Coin Charm</h3>
+                                    <p class="product-description">Vintage-inspired pendant with sun and moon
+                                        engravings.</p>
+                                </div>
+                                <span class="product-price">£95</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 10 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1603561591411-07134e71a2a9?auto=format&fit=crop&q=80&w=400"
+                                    alt="Onyx Ring" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Onyx Signet Ring</h3>
+                                    <p class="product-description">Solid gold signet ring featuring a polished black
+                                        onyx stone.</p>
+                                </div>
+                                <span class="product-price">£410</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 11 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1589128777073-263566ae5e4d?auto=format&fit=crop&q=80&w=400"
+                                    alt="Baroque Pearl" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Baroque Pearl Choker</h3>
+                                    <p class="product-description">Unique organic baroque pearls hand-strung on silk
+                                        thread.</p>
+                                </div>
+                                <span class="product-price">£220</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 12 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?auto=format&fit=crop&q=80&w=400"
+                                    alt="Ruby Pendant" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Ruby Heart Pendant</h3>
+                                    <p class="product-description">Stunning heart-cut ruby set in a delicate rose gold
+                                        mount.</p>
+                                </div>
+                                <span class="product-price">£580</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 13 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=400"
+                                    alt="Tennis Bracelet" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">Exclusive</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Diamond Tennis Bracelet</h3>
+                                    <p class="product-description">3ct diamond strand in a continuous white gold
+                                        setting.</p>
+                                </div>
+                                <span class="product-price">£2,800</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 14 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1588444839799-eb00f490465c?auto=format&fit=crop&q=80&w=400"
+                                    alt="Art Deco Brooch" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Art Deco Brooch</h3>
+                                    <p class="product-description">Geometric patterned brooch with enamel and fine
+                                        gemstones.</p>
+                                </div>
+                                <span class="product-price">£150</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 15 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?auto=format&fit=crop&q=80&w=400"
+                                    alt="Chain Set" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Layered Gold Chains</h3>
+                                    <p class="product-description">Set of three delicate gold chains for an effortless
+                                        layered look.</p>
+                                </div>
+                                <span class="product-price">£130</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANTS Category -->
+                <div class="category-content" id="pants-category" style="display: none;">
+                    <div class="product-grid">
+                        <!-- Product 1 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.pexels.com/photos/1055691/pexels-photo-1055691.jpeg?auto=compress&cs=tinysrgb&w=400&h=600"
+                                    alt="Wide-Leg Trousers" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">Elegant</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Wide-Leg Trousers</h3>
+                                    <p class="product-description">High-waisted wool blend trousers in charcoal grey.
+                                    </p>
+                                </div>
+                                <span class="product-price">£125</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 2 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.pexels.com/photos/1598507/pexels-photo-1598507.jpeg?auto=compress&cs=tinysrgb&w=400"
+                                    alt="Indigo Jeans" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Indigo Skinny Jeans</h3>
+                                    <p class="product-description">Premium stretch denim with a deep indigo wash.</p>
+                                </div>
+                                <span class="product-price">£85</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 3 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.pexels.com/photos/1926769/pexels-photo-1926769.jpeg?auto=compress&cs=tinysrgb&w=400&h=650"
+                                    alt="Leather Leggings" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">Trending</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Leather Leggings</h3>
+                                    <p class="product-description">Buttery soft vegan leather leggings in matte black.
+                                    </p>
+                                </div>
+                                <span class="product-price">£140</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 4 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.pexels.com/photos/1055691/pexels-photo-1055691.jpeg?auto=compress&cs=tinysrgb&w=400&h=550"
+                                    alt="Pleated Culottes" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Pleated Culottes</h3>
+                                    <p class="product-description">Flowy pleated fabric in a sophisticated cream shade.
+                                    </p>
+                                </div>
+                                <span class="product-price">£75</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 5 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.pexels.com/photos/1598507/pexels-photo-1598507.jpeg?auto=compress&cs=tinysrgb&w=400&h=600"
+                                    alt="Cargo Pants" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Cargo Utilitarian Pants</h3>
+                                    <p class="product-description">Multi-pocket cargo pants in a rugged olive drab
+                                        finish.</p>
+                                </div>
+                                <span class="product-price">£95</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 6 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.pexels.com/photos/1926769/pexels-photo-1926769.jpeg?auto=compress&cs=tinysrgb&w=400&h=700"
+                                    alt="Velvet Flares" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">Retro</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Velvet Flare Pants</h3>
+                                    <p class="product-description">Retro-inspired flared pants in midnight blue velvet.
+                                    </p>
+                                </div>
+                                <span class="product-price">£110</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 7 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.pexels.com/photos/1055691/pexels-photo-1055691.jpeg?auto=compress&cs=tinysrgb&w=400&h=650"
+                                    alt="Linen Slacks" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Linen Summer Slacks</h3>
+                                    <p class="product-description">Breathable pure white linen slacks for warm days.</p>
+                                </div>
+                                <span class="product-price">£65</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 8 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.pexels.com/photos/1598507/pexels-photo-1598507.jpeg?auto=compress&cs=tinysrgb&w=400&h=650"
+                                    alt="Plaid Trousers" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Plaid Tailored Trousers</h3>
+                                    <p class="product-description">Heritage check pattern trousers in warm chocolate
+                                        brown.</p>
+                                </div>
+                                <span class="product-price">£135</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 9 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.pexels.com/photos/1926769/pexels-photo-1926769.jpeg?auto=compress&cs=tinysrgb&w=400&h=750"
+                                    alt="Silk Pants" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">Couture</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Silk Pyjama Pants</h3>
+                                    <p class="product-description">Luxe printed silk pants for elegant lounging.</p>
+                                </div>
+                                <span class="product-price">£180</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 10 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.pexels.com/photos/1598507/pexels-photo-1598507.jpeg?auto=compress&cs=tinysrgb&w=400&h=700"
+                                    alt="Mom Jeans" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">High-Rise Mom Jeans</h3>
+                                    <p class="product-description">Authentic vintage-fit mom jeans in a light wash.</p>
+                                </div>
+                                <span class="product-price">£70</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 11 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.pexels.com/photos/1055691/pexels-photo-1055691.jpeg?auto=compress&cs=tinysrgb&w=400&h=700"
+                                    alt="Satin Joggers" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Satin Jogger Pants</h3>
+                                    <p class="product-description">Elevated athletic-style joggers in blush pink satin.
+                                    </p>
+                                </div>
+                                <span class="product-price">£90</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 12 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.pexels.com/photos/1926769/pexels-photo-1926769.jpeg?auto=compress&cs=tinysrgb&w=400&h=800"
+                                    alt="Split-Hem Leggings" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">Hot</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Split-Hem Leggings</h3>
+                                    <p class="product-description">Trendy split-hem leggings for showcasing statement
+                                        shoes.</p>
+                                </div>
+                                <span class="product-price">£45</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 13 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.pexels.com/photos/1598507/pexels-photo-1598507.jpeg?auto=compress&cs=tinysrgb&w=400&h=750"
+                                    alt="Corduroy Trousers" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Corduroy Trousers</h3>
+                                    <p class="product-description">Fine wale corduroy trousers in a rich mustard yellow.
+                                    </p>
+                                </div>
+                                <span class="product-price">£105</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 14 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.pexels.com/photos/1055691/pexels-photo-1055691.jpeg?auto=compress&cs=tinysrgb&w=400&h=750"
+                                    alt="Paperbag Pants" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Paperbag Waist Pants</h3>
+                                    <p class="product-description">Flattering high-waisted paperbag pants in navy blue.
+                                    </p>
+                                </div>
+                                <span class="product-price">£80</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+
+                        <!-- Product 15 -->
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="https://images.unsplash.com/photo-1520006403993-4fc23b08e273?auto=format&fit=crop&q=80&w=400"
+                                    alt="Sequined Pants" class="product-image">
+                                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                                <span class="product-badge">Party</span>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-details">
+                                    <h3 class="product-name">Sequined Party Pants</h3>
+                                    <p class="product-description">Full-length silver sequined pants for making a
+                                        statement.</p>
+                                </div>
+                                <span class="product-price">£220</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary">Add to Cart</button>
+                                <button class="btn btn-secondary">Details</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SELL SECTION -->
+            <section class="content-section" id="sell-section" style="display: none;">
+                <div class="sell-dashboard">
+                    <div class="header">
+                        <h1 class="header-title">Become a Seller</h1>
+                        <p class="header-subtitle">List your premium items and reach thousands of buyers</p>
+                    </div>
+
+                    <div class="sell-options-grid">
+                        <div class="sell-card">
+                            <i class="fas fa-plus-circle sell-icon"></i>
+                            <h3>List New Item</h3>
+                            <p>Upload photos and details of your products to start selling</p>
+                            <button class="btn btn-primary">Create Listing</button>
+                        </div>
+
+                        <div class="sell-card">
+                            <i class="fas fa-box sell-icon"></i>
+                            <h3>My Listings</h3>
+                            <p>View and manage all your active product listings</p>
+                            <button class="btn btn-secondary">View Listings</button>
+                        </div>
+
+                        <div class="sell-card">
+                            <i class="fas fa-chart-line sell-icon"></i>
+                            <h3>Sales Dashboard</h3>
+                            <p>Track your sales performance and revenue</p>
+                            <button class="btn btn-secondary">View Dashboard</button>
+                        </div>
+
+                        <div class="sell-card">
+                            <i class="fas fa-comments sell-icon"></i>
+                            <h3>Messages</h3>
+                            <p>Communicate with potential buyers</p>
+                            <button class="btn btn-secondary">View Messages</button>
+                        </div>
+                    </div>
+
+                    <div class="seller-benefits">
+                        <h2>Why Sell on CHASED?</h2>
+                        <div class="benefits-grid">
+                            <div class="benefit-item">
+                                <i class="fas fa-users"></i>
+                                <h4>Large Audience</h4>
+                                <p>Reach thousands of fashion enthusiasts</p>
+                            </div>
+                            <div class="benefit-item">
+                                <i class="fas fa-percent"></i>
+                                <h4>Low Fees</h4>
+                                <p>Competitive commission rates</p>
+                            </div>
+                            <div class="benefit-item">
+                                <i class="fas fa-lock"></i>
+                                <h4>Secure Payments</h4>
+                                <p>Safe and reliable transactions</p>
+                            </div>
+                            <div class="benefit-item">
+                                <i class="fas fa-headset"></i>
+                                <h4>24/7 Support</h4>
+                                <p>Dedicated seller support team</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>CHASED</h4>
+                <p>Luxury defined by simplicity. We bring you the finest collection of boots and bags crafted for the UK
+                    market.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul class="footer-links">
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Shop Catalog</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Support</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Contact Help</a></li>
+                    <li><a href="#">Return Policy</a></li>
+                    <li><a href="#">Shipping Info</a></li>
+                    <li><a href="#">FAQ</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Newsletter</h4>
+                <p>Join our style community for exclusive updates.</p>
+                <div class="mt-lg">
+                    <button class="btn btn-primary" style="width: auto; padding: 10px 20px;">Subscribe</button>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 CHASED Luxury Ltd. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- HELP MODAL -->
+    <div id="help-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">How can we help?</h2>
+                <button class="modal-close" id="close-help">&times;</button>
+            </div>
+            <div class="help-content">
+                <div class="help-section">
+                    <h3>Frequently Asked Questions</h3>
+                    <div class="faq-item">
+                        <h4>How do I track my order?</h4>
+                        <p>Once your order is shipped, you will receive an email with a tracking link. You can also view
+                            status in your Profile.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4>What is your return policy?</h4>
+                        <p>We offer 30-day free returns for all premium items in original condition.</p>
+                    </div>
+                </div>
+                <div class="help-section">
+                    <h3>Search Tips</h3>
+                    <p>Try searching for categories like "shoes", "pants", or "jewelry" to quickly find what you need.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTACT MODAL -->
+    <div id="contact-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Contact Us</h2>
+                <button class="modal-close" id="close-contact">&times;</button>
+            </div>
+            <div class="contact-content">
+                <form id="contact-form" class="auth-form">
+                    <div class="form-group">
+                        <label>Your Name</label>
+                        <input type="text" class="form-input" placeholder="Enter your name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea class="form-input" rows="4" placeholder="How can we assist you?" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Send Message</button>
+                </form>
+                <div class="contact-methods">
+                    <p><i class="fas fa-envelope"></i> support@chased.com</p>
+                    <p><i class="fas fa-phone"></i> +44 20 7946 0958</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
