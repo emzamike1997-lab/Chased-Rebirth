@@ -760,29 +760,36 @@ function initializeProfileForms() {
         });
     }
 
-    // Handle login form submission
-    const loginFormElement = document.getElementById('profile-login-form');
-    if (loginFormElement) {
-        loginFormElement.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            console.log('CHASED: Login submit triggered');
-            alert('Debug: Login process initiated...'); // DEBUG ALERT
+    // Handle login form submission (Direct Button Click)
+    const loginBtn = document.querySelector('#profile-login-form button[type="submit"]');
+    if (loginBtn) {
+        // Remove type="submit" to prevent form default handling quirks
+        loginBtn.type = "button";
 
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            const submitBtn = loginFormElement.querySelector('button[type="submit"]');
+        loginBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            console.log('CHASED: Login CLICK triggered');
+            alert('Debug: Login Button Clicked!');
+
+            const emailInput = document.getElementById('login-email');
+            const passwordInput = document.getElementById('login-password');
+
+            if (!emailInput.value || !passwordInput.value) {
+                alert('Please fill in all fields (Manual Check)');
+                return;
+            }
 
             if (!supabaseClient) {
                 alert('Critical Error: Supabase client not initialized!');
                 return;
             }
 
-            submitBtn.textContent = 'Logging in...';
-            submitBtn.disabled = true;
+            loginBtn.textContent = 'Logging in...';
+            loginBtn.disabled = true;
 
             const { data, error } = await supabaseClient.auth.signInWithPassword({
-                email: email,
-                password: password,
+                email: emailInput.value,
+                password: passwordInput.value,
             });
 
             if (data.user) {
@@ -792,47 +799,53 @@ function initializeProfileForms() {
             } else {
                 console.error('CHASED: Login error', error);
                 alert(`Login failed: ${error.message}`);
-                submitBtn.textContent = 'Login';
-                submitBtn.disabled = false;
+                loginBtn.textContent = 'Login';
+                loginBtn.disabled = false;
             }
         });
+    } else {
+        console.error('CHASED: Login Button NOT found');
     }
 
-    // Handle signup form submission
-    const signupFormElement = document.getElementById('profile-signup-form');
-    console.log('CHASED: Signup form element found:', !!signupFormElement);
+    // Handle signup form submission (Direct Button Click)
+    const signupBtn = document.querySelector('#profile-signup-form button[type="submit"]');
 
-    if (signupFormElement) {
-        signupFormElement.addEventListener('submit', async (e) => {
+    if (signupBtn) {
+        // Change type to prevent default form submission
+        signupBtn.type = "button";
+
+        signupBtn.addEventListener('click', async (e) => {
             e.preventDefault();
-            console.log('CHASED: Signup submit triggered');
-            alert('Debug: Create Account process initiated...'); // DEBUG ALERT
+            console.log('CHASED: Signup CLICK triggered');
+            alert('Debug: Create Account Button Clicked!');
 
-            const name = document.getElementById('signup-name').value;
-            const email = document.getElementById('signup-email').value;
-            const password = document.getElementById('signup-password').value;
-            const confirm = document.getElementById('signup-confirm').value;
-            const submitBtn = signupFormElement.querySelector('button[type="submit"]');
+            const nameInput = document.getElementById('signup-name');
+            const emailInput = document.getElementById('signup-email');
+            const passwordInput = document.getElementById('signup-password');
+            const confirmInput = document.getElementById('signup-confirm');
 
-            if (password !== confirm) {
+            if (!nameInput.value || !emailInput.value || !passwordInput.value) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            if (passwordInput.value !== confirmInput.value) {
                 alert('Passwords do not match!');
                 return;
             }
 
-            submitBtn.textContent = 'Creating account...';
-            submitBtn.disabled = true;
+            signupBtn.textContent = 'Creating account...';
+            signupBtn.disabled = true;
 
             try {
                 console.log('CHASED: Calling Supabase signUp...');
-                // Get current URL origin for redirect
                 const redirectUrl = window.location.origin;
-                console.log('CHASED: Redirect URL set to:', redirectUrl);
 
                 const { data, error } = await supabaseClient.auth.signUp({
-                    email,
-                    password,
+                    email: emailInput.value,
+                    password: passwordInput.value,
                     options: {
-                        data: { full_name: name },
+                        data: { full_name: nameInput.value },
                         emailRedirectTo: redirectUrl
                     }
                 });
@@ -841,23 +854,28 @@ function initializeProfileForms() {
                 console.log('CHASED: Supabase response:', data);
 
                 if (data.session) {
-                    // User is auto-logged in (rare with email confirm on, but possible)
                     alert('Account created and logged in!');
                     updateUserUI(data.user);
                 } else if (data.user) {
-                    // User created but needs email confirmation
-                    alert(`Account created! IMPORTANT: Please check ${email} for the confirmation link to activate your account.`);
+                    alert(`Account created! IMPORTANT: Please check ${emailInput.value} for the confirmation link.`);
                 }
 
-                signupFormElement.reset();
+                // Clear form
+                nameInput.value = '';
+                emailInput.value = '';
+                passwordInput.value = '';
+                confirmInput.value = '';
+
             } catch (err) {
                 console.error('CHASED: Signup error:', err);
                 alert(`Signup failed: ${err.message}`);
             } finally {
-                submitBtn.textContent = 'Create Account';
-                submitBtn.disabled = false;
+                signupBtn.textContent = 'Create Account';
+                signupBtn.disabled = false;
             }
         });
+    } else {
+        console.error('CHASED: Signup Button NOT found');
     }
 }
 
