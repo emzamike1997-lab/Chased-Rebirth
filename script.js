@@ -922,6 +922,12 @@ function updateUserUI(user) {
             <div class="header">
                 <h1 class="header-title">Welcome, ${user.user_metadata.full_name || user.email}</h1>
                 <p class="header-subtitle">You are now logged in to your CHASED account</p>
+                <div class="welcome-video-container">
+                    <video autoplay muted loop playsinline class="welcome-video">
+                        <source src="assets/videos/Welcome.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
             </div>
             <div class="user-details" style="margin-top: 2rem; padding: 2rem; background: rgba(255,255,255,0.05); border-radius: 12px;">
                 <p><strong>Email:</strong> ${user.email}</p>
