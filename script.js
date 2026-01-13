@@ -807,32 +807,66 @@ function initializeProfileForms() {
         console.error('CHASED: Login Button NOT found');
     }
 
-    // Handle signup form submission (Direct Button Click)
+    // Handle signup form validation & submission
     const signupBtn = document.querySelector('#profile-signup-form button[type="submit"]');
 
+    // Show Password Toggle Logic
+    const showPassToggle = document.getElementById('show-password-toggle');
+    if (showPassToggle) {
+        showPassToggle.addEventListener('change', (e) => {
+            const passField = document.getElementById('signup-password');
+            const confirmField = document.getElementById('signup-confirm');
+            const type = e.target.checked ? 'text' : 'password';
+
+            if (passField) passField.type = type;
+            if (confirmField) confirmField.type = type;
+        });
+    }
+
     if (signupBtn) {
-        // Change type to prevent default form submission
         signupBtn.type = "button";
 
         signupBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             console.log('CHASED: Signup CLICK triggered');
-            alert('Debug: Create Account Button Clicked!');
 
             const nameInput = document.getElementById('signup-name');
             const emailInput = document.getElementById('signup-email');
             const passwordInput = document.getElementById('signup-password');
             const confirmInput = document.getElementById('signup-confirm');
+            const termsParams = document.getElementById('terms-agree');
 
-            if (!nameInput.value || !emailInput.value || !passwordInput.value) {
-                alert('Please fill in all fields');
+            // 1. Detailed Validation
+            if (!nameInput.value.trim()) {
+                alert('Instruction: Please enter your full name to proceed.');
+                nameInput.focus();
                 return;
             }
-
+            if (!emailInput.value.trim()) {
+                alert('Instruction: An email address is required to create your account.');
+                emailInput.focus();
+                return;
+            }
+            if (!passwordInput.value) {
+                alert('Instruction: Please create a password to secure your account.');
+                passwordInput.focus();
+                return;
+            }
+            if (!confirmInput.value) {
+                alert('Instruction: Please confirm your password by typing it again.');
+                confirmInput.focus();
+                return;
+            }
             if (passwordInput.value !== confirmInput.value) {
-                alert('Passwords do not match!');
+                alert('Error: The passwords you entered do not match. Please try again.');
                 return;
             }
+            if (termsParams && !termsParams.checked) {
+                alert('Instruction: You must agree to the Terms of Service to continue.');
+                return;
+            }
+
+            alert('Details looks good! Creating your account...');
 
             signupBtn.textContent = 'Creating account...';
             signupBtn.disabled = true;
@@ -854,10 +888,10 @@ function initializeProfileForms() {
                 console.log('CHASED: Supabase response:', data);
 
                 if (data.session) {
-                    alert('Account created and logged in!');
+                    alert('Success: Account created and logged in!');
                     updateUserUI(data.user);
                 } else if (data.user) {
-                    alert(`Account created! IMPORTANT: Please check ${emailInput.value} for the confirmation link.`);
+                    alert(`Success! Please check your email (${emailInput.value}) for the confirmation link to complete setup.`);
                 }
 
                 // Clear form
