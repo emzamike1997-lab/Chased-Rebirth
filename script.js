@@ -769,7 +769,6 @@ function initializeProfileForms() {
         loginBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             console.log('CHASED: Login CLICK triggered');
-            alert('Debug: Login Button Clicked!');
 
             const emailInput = document.getElementById('login-email');
             const passwordInput = document.getElementById('login-password');
