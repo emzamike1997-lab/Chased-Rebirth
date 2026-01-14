@@ -22,6 +22,30 @@ try {
     }
 } catch (err) {
     console.error('CHASED: checking supabase failed', err);
+    console.error('CHASED: checking supabase failed', err);
+}
+
+// ===================================
+// SESSION RESTORATION
+// ===================================
+async function restoreSession() {
+    if (!supabaseClient) return;
+
+    try {
+        console.log('CHASED: Checking for existing session...');
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+
+        if (error) throw error;
+
+        if (session && session.user) {
+            console.log('CHASED: Session restored for', session.user.email);
+            updateUserUI(session.user);
+        } else {
+            console.log('CHASED: No active session found.');
+        }
+    } catch (err) {
+        console.error('CHASED: Session restore error:', err);
+    }
 }
 
 // Image viewer state
@@ -41,6 +65,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeProductCategories();
     initializeHeaderInteractions();
     initializeMobileCart();
+
+    // Check for existing session (Remember Me)
+    restoreSession();
 
     // Set home section as default landing page
     navigateToSection('home');
