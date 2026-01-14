@@ -69,6 +69,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check for existing session (Remember Me)
     restoreSession();
 
+    // Check for "Welcome Back" widget
+    checkRecentLogin();
+
     // Set home section as default landing page
     navigateToSection('home');
 
@@ -81,6 +84,48 @@ function initializeMobileCart() {
         mobileCartBtn.addEventListener('click', (e) => {
             e.preventDefault();
             showCartModal();
+        });
+    }
+}
+
+// ===================================
+// RECENT LOGIN MEMORY
+// ===================================
+function checkRecentLogin() {
+    const recentUser = JSON.parse(localStorage.getItem('chased_recent_user'));
+    const widget = document.getElementById('recent-login-widget');
+    const loginForm = document.getElementById('profile-login-form');
+
+    if (recentUser && widget && loginForm) {
+        // Populate widget
+        document.getElementById('recent-avatar').textContent = recentUser.initials;
+        document.getElementById('recent-name').textContent = recentUser.name;
+        document.getElementById('recent-email').textContent = recentUser.email;
+
+        // Show widget, hide form
+        widget.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+
+        // Handle "Continue"
+        document.getElementById('recent-login-btn').addEventListener('click', () => {
+            widget.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+
+            // Pre-fill email
+            const emailInput = document.getElementById('login-email');
+            if (emailInput) {
+                emailInput.value = recentUser.email;
+                const passwordInput = document.getElementById('login-password');
+                if (passwordInput) passwordInput.focus();
+            }
+        });
+
+        // Handle "Not you?"
+        document.getElementById('not-you-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('chased_recent_user');
+            widget.classList.add('hidden');
+            loginForm.classList.remove('hidden');
         });
     }
 }
@@ -835,6 +880,15 @@ function initializeProfileForms() {
 
             if (data.user) {
                 console.log('CHASED: Login successful', data.user);
+
+                // SAVE RECENT USER for "Welcome Back" feature
+                const userData = {
+                    email: data.user.email,
+                    name: data.user.user_metadata.full_name || data.user.email.split('@')[0],
+                    initials: (data.user.user_metadata.full_name || data.user.email).substring(0, 2).toUpperCase()
+                };
+                localStorage.setItem('chased_recent_user', JSON.stringify(userData));
+
                 alert(`Success: Welcome back, ${data.user.email}!`);
                 updateUserUI(data.user);
             } else {
