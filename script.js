@@ -927,7 +927,7 @@ function updateUserUI(user) {
                 <p class="header-subtitle">You are now logged in to your CHASED account</p>
                 <div class="welcome-video-container">
                     <video autoplay loop playsinline controls class="welcome-video">
-                        <source src="assets/videos/Welcome.mp4" type="video/mp4">
+                        <source src="assets/videos/Welcome 2.mp4" type="video/mp4">
                         Your browser does not support the video tag.
                     </video>
                 </div>
