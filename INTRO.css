@@ -674,6 +674,32 @@ p {
     }
 }
 
+/* Base style for profile container width transition */
+.profile-container {
+    transition: max-width var(--transition-normal);
+}
+
+/* Wider profile container for Welcome Video screen */
+.profile-container.wide-profile {
+    max-width: 900px;
+    /* Match sketch width */
+}
+
+.welcome-video-container {
+    margin-top: var(--spacing-lg);
+    background: #000;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+}
+
+.welcome-video {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
 /* ===================================
    PRODUCT CATEGORIES
    =================================== */

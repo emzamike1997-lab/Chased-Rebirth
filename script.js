@@ -918,12 +918,15 @@ function updateUserUI(user) {
     const profileContainer = document.querySelector('.profile-container');
 
     if (profileContainer) {
+        // Add wide class for welcome screen
+        profileContainer.classList.add('wide-profile');
+
         profileContainer.innerHTML = `
             <div class="header">
                 <h1 class="header-title">Welcome, ${user.user_metadata.full_name || user.email}</h1>
                 <p class="header-subtitle">You are now logged in to your CHASED account</p>
                 <div class="welcome-video-container">
-                    <video autoplay muted loop playsinline class="welcome-video">
+                    <video autoplay loop playsinline controls class="welcome-video">
                         <source src="assets/videos/Welcome.mp4" type="video/mp4">
                         Your browser does not support the video tag.
                     </video>
