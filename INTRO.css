@@ -681,8 +681,8 @@ p {
 
 /* Wider profile container for Welcome Video screen */
 .profile-container.wide-profile {
-    max-width: 1900px;
-    /* Increased to 1900px per user request */
+    max-width: 2500px;
+    /* Increased to 2500px per user request */
 }
 
 .welcome-video-container {
