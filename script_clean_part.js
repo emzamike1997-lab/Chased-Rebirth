@@ -451,14 +451,13 @@ function openListingForm() {
 
                         <div class="form-group" style="margin-bottom: 15px;">
                              <label class="dashboard-label">Category</label>
-                             <select id="item-category" class="form-input" required>
-                                <option value="dresses">Dresses</option>
+                             <select id="list-category" class="dashboard-input">
                                 <option value="footwear">Footwear</option>
+                                <option value="dresses">Dresses</option>
                                 <option value="tops">Tops</option>
                                 <option value="jewelry">Jewelry</option>
                                 <option value="pants">Pants</option>
-                                <option value="hats">Hats</option>
-                            </select>
+                             </select>
                         </div>
 
                         <button type="submit" class="btn btn-primary btn-full">Post to Rebirth</button>
@@ -563,55 +562,12 @@ async function handlePostItem(e) {
     }
 }
 
-// ===================================
-// REBIRTH MARKETPLACE LOGIC
-// ===================================
-
-function openRebirthMarketplace() {
-    // Hide Standard Buy Elements
-    document.querySelector('.product-categories').style.display = 'none';
-    const promo = document.getElementById('rebirth-promo');
-    if (promo) promo.style.display = 'none';
-
-    // Hide Hero Banner (NEW)
-    const hero = document.getElementById('buy-landing-hero');
-    if (hero) hero.style.display = 'none';
-
-    // Hide standard category content if active
-    const standardCats = document.querySelectorAll('.category-content');
-    standardCats.forEach(c => c.style.display = 'none');
-
-    // Hide placeholder
-    const placeholder = document.getElementById('category-placeholder');
-    if (placeholder) placeholder.style.display = 'none';
-
-    // Show Rebirth Marketplace
-    const rebirthMarket = document.getElementById('rebirth-marketplace');
-    if (rebirthMarket) {
-        rebirthMarket.style.display = 'block';
-        loadRebirthItems(); // Reload/Sorter items
-    }
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function closeRebirthMarketplace() {
-    // Reset to full Buy Section state
-    // Reset to full Buy Section state
-    navigateToSection('buy');
-}
-
-// Expose navigation
-window.openRebirthMarketplace = openRebirthMarketplace;
-window.closeRebirthMarketplace = closeRebirthMarketplace;
-
 async function loadRebirthItems() {
-    // Clear all grids first
-    const categories = ['dresses', 'footwear', 'tops', 'jewelry', 'hats', 'pants'];
-    categories.forEach(cat => {
-        const grid = document.getElementById(`rebirth-${cat}-grid`);
-        if (grid) grid.innerHTML = '<p>Loading...</p>';
-    });
+    const grid = document.getElementById('rebirth-grid');
+    if (!grid) return;
+
+    // Show loading state
+    grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">Loading community finds...</p>';
 
     try {
         const { data: items, error } = await supabaseClient
@@ -621,66 +577,38 @@ async function loadRebirthItems() {
 
         if (error) throw error;
 
-        // Reset grids to empty before filling
-        categories.forEach(cat => {
-            const grid = document.getElementById(`rebirth-${cat}-grid`);
-            if (grid) grid.innerHTML = '';
-        });
-
         if (!items || items.length === 0) {
-            // Show empty states if no items at all
-            categories.forEach(cat => {
-                const grid = document.getElementById(`rebirth-${cat}-grid`);
-                if (grid) grid.innerHTML = '<p style="font-style: italic; color: #666;">No items listed yet.</p>';
-            });
+            grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px; color: #666;">No items listed yet. Be the first!</p>';
             return;
         }
 
-        items.forEach(item => {
-            // Normalize category matching (case insensitive)
-            const catKey = item.category ? item.category.toLowerCase().trim() : 'others';
-            // Simple mapping to ensure valid ID
-
-            const targetGrid = document.getElementById(`rebirth-${catKey}-grid`);
-            if (targetGrid) {
-                const safeTitle = item.title.replace(/'/g, "\\'");
-                const itemHTML = `
-                    <div class="product-card">
-                        <div class="product-image-container">
-                            <img src="${item.image_url}" alt="${item.title}" class="product-image">
-                            <button class="cart-overlay-btn" onclick="addToCartFromRebirth('${safeTitle}', '${item.price}', '${item.image_url}')">
-                                <i class="fas fa-shopping-cart"></i>
-                            </button>
-                        </div>
-                        <div class="product-info">
-                            <div class="product-details">
-                                <h3 class="product-name">${item.title}</h3>
-                                <p class="product-description">Sold by @${item.seller_name || 'User'}</p>
-                            </div>
-                            <span class="product-price">${item.price}</span>
-                        </div>
+        grid.innerHTML = items.map(item => `
+            <div class="product-card">
+                <div class="product-image-container">
+                    <img src="${item.image_url}" alt="${item.title}" class="product-image">
+                    <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                    <span class="product-badge" style="background: var(--color-cta); color: #000;">Rebirth</span>
+                </div>
+                <div class="product-info">
+                    <div class="product-details">
+                        <h3 class="product-name">${item.title}</h3>
+                        <p class="product-description">Listed by ${item.seller_name || 'User'}</p>
                     </div>
-                `;
-                targetGrid.insertAdjacentHTML('beforeend', itemHTML);
-            }
-        });
+                    <span class="product-price">${item.price}</span>
+                </div>
+                <div class="product-actions">
+                    <button class="btn btn-primary" onclick="addToCartFromRebirth('${item.title}', '${item.price}', '${item.image_url}')">Add to Cart</button>
+                    <button class="btn btn-secondary">Details</button>
+                </div>
+            </div>
+        `).join('');
 
-        // Show empty states for specific categories that remained empty
-        categories.forEach(cat => {
-            const grid = document.getElementById(`rebirth-${cat}-grid`);
-            if (grid && grid.children.length === 0) {
-                grid.innerHTML = '<p style="font-style: italic; color: #666;">No items listed in this category yet.</p>';
-            }
-        });
-
+        // Re-bind viewers (Cart needs helper because logic was tightly coupled to DOM structure in original addToCart)
         initializeImageViewer();
 
     } catch (err) {
         console.error('Error loading items:', err);
-        categories.forEach(cat => {
-            const grid = document.getElementById(`rebirth-${cat}-grid`);
-            if (grid) grid.innerHTML = '<p style="color: red;">Failed to load items.</p>';
-        });
+        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: red;">Failed to load items.</p>';
     }
 }
 
@@ -1540,267 +1468,13 @@ function initializeProductCategories() {
 
     categoryTabs.forEach(tab => {
         tab.addEventListener('click', () => {
-
-            const selectedCategory = document.getElementById(`${categoryName}-category`);
-            if (selectedCategory) {
-                selectedCategory.style.display = 'block';
-                selectedCategory.classList.add('active');
-            }
-        });
-    });
-}
-
-// ===================================
-// MY LISTINGS (Edit/Delete)
-// ===================================
-async function openMyListings() {
-    // Close sell menu
-    const sellModal = document.getElementById('sell-modal');
-    if (sellModal) sellModal.classList.remove('active');
-
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) {
-        alert("Please login to view your listings.");
-        return;
-    }
-
-    let myModal = document.getElementById('my-listings-modal');
-    if (!myModal) {
-        const modalHTML = `
-            <div class="modal" id="my-listings-modal">
-                <div class="modal-content" style="max-width: 900px; width: 90%; background: #1a1a1a; border: 1px solid #333;">
-                    <div class="modal-header" style="border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 20px;">
-                        <h2 class="modal-title" style="margin: 0;">My Listings</h2>
-                        <button class="modal-close" id="close-my-listings" style="font-size: 1.5rem;">&times;</button>
-                    </div>
-                    <div id="my-listings-grid" class="product-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
-                        <!-- Items injected here -->
-                    </div>
-                </div>
-            </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        myModal = document.getElementById('my-listings-modal');
-
-        document.getElementById('close-my-listings').addEventListener('click', () => {
-            myModal.classList.remove('active');
-        });
-    }
-
-    // Load items
-    const grid = document.getElementById('my-listings-grid');
-    grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 20px;">Loading your items...</p>';
-    myModal.classList.add('active');
-
-    const { data: items, error } = await supabaseClient
-        .from('rebirth_items')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-    if (error) {
-        grid.innerHTML = '<p style="color:red; grid-column: 1/-1; text-align: center;">Error loading listings.</p>';
-        return;
-    }
-
-    if (items.length === 0) {
-        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 20px;">You haven\'t listed anything yet.</p>';
-        return;
-    }
-
-    grid.innerHTML = items.map(item => `
-        <div class="product-card" style="display: flex; flex-direction: column; background: #222; border: 1px solid #333; border-radius: 8px; overflow: hidden; transition: transform 0.2s;">
-            <div class="product-image-container" style="height: 200px; position: relative;">
-                <img src="${item.image_url}" alt="${item.title}" style="width: 100%; height: 100%; object-fit: cover;">
-                <span style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; text-transform: uppercase;">${item.category}</span>
-            </div>
-            <div class="product-info" style="padding: 15px; flex: 1; display: flex; flex-direction: column;">
-                <h3 class="product-name" style="margin: 0 0 5px 0; font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.title}</h3>
-                <span class="product-price" style="font-size: 1.2rem; font-weight: bold; color: var(--color-cta);">${item.price}</span>
-            </div>
-            <div class="product-actions" style="padding: 15px; padding-top: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <button class="btn btn-secondary" style="width: 100%; padding: 8px;" onclick="window.handleEditPrice(${item.id}, '${item.price}')">
-                    <i class="fas fa-edit"></i> Edit
-                </button>
-                <button class="btn btn-primary" style="width: 100%; padding: 8px; background: #dc3545; border-color: #dc3545;" onclick="window.handleDeleteItem(${item.id})">
-                    <i class="fas fa-trash"></i> Delete
-                </button>
-            </div>
-        </div>
-    `).join('');
-}
-
-async function handleDeleteItem(id) {
-    if (!confirm("Are you sure you want to delete this listing?")) return;
-
-    const { error } = await supabaseClient
-        .from('rebirth_items')
-        .delete()
-        .eq('id', id);
-
-    if (error) {
-        alert("Error deleting: " + error.message);
-    } else {
-        alert("Item deleted.");
-        openMyListings(); // Refresh list
-        loadRebirthItems(); // Refresh main feed in background
-    }
-}
-
-async function handleEditPrice(id, oldPrice) {
-    // fast cleaning of currency symbol if present
-    const cleanPrice = oldPrice.replace('£', '').trim();
-    const newPrice = prompt("Enter new price (£):", cleanPrice);
-
-    if (!newPrice || newPrice === cleanPrice) return;
-
-    const formattedPrice = `£${newPrice}`;
-
-    const { error } = await supabaseClient
-        .from('rebirth_items')
-        .update({ price: formattedPrice })
-        .eq('id', id);
-
-    if (error) {
-        alert("Error updating: " + error.message);
-    } else {
-        openMyListings(); // Refresh list
-        loadRebirthItems(); // Refresh main feed
-    }
-}
-
-// Expose to window
-window.openMyListings = openMyListings;
-window.handleDeleteItem = handleDeleteItem;
-window.handleEditPrice = handleEditPrice;
-
-// ===================================
-// PRODUCT CATEGORIES (Standard)
-// ===================================
-function initializeProductCategories() {
-    const categoryTabs = document.querySelectorAll('.category-tab');
-    const placeholder = document.getElementById('category-placeholder');
-    const promo = document.getElementById('rebirth-promo');
-    const rebirthMarket = document.getElementById('rebirth-marketplace');
-
-    categoryTabs.forEach(tab => {
-        tab.addEventListener('click', (e) => {
-            console.log('CHASED: Category tab clicked', tab.id);
             const categoryName = tab.getAttribute('data-category');
 
-            // 1. Hide Placeholder & Promo
-            if (placeholder) placeholder.style.display = 'none';
-            if (promo) promo.style.display = 'none';
+            // Hide placeholder
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
 
-            // 2. Hide Rebirth Marketplace (Critical Fix)
-            if (rebirthMarket) rebirthMarket.style.display = 'none';
-
-            // 3. Update active tab styling
+            // Update active tab
             categoryTabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
-
-            // 4. Show selected category content
-            const allCategories = document.querySelectorAll('.category-content');
-            allCategories.forEach(cat => {
-                cat.style.display = 'none';
-                cat.classList.remove('active');
-            });
-
-            const selectedCategory = document.getElementById(`${categoryName}-category`);
-            if (selectedCategory) {
-                selectedCategory.style.display = 'block';
-                // Small timeout to allow display:block to render before opacity transition if any
-                setTimeout(() => selectedCategory.classList.add('active'), 10);
-            } else {
-                console.error(`CHASED: Category content not found for #${categoryName}-category`);
-            }
-        });
-    });
-}
-
-// ===================================
-// SHOP ENTRY ANIMATION
-// ===================================
-function enterShop() {
-    console.log('CHASED: Entering shop...');
-    const hero = document.getElementById('buy-landing-hero');
-    const categories = document.querySelector('.product-categories');
-    const promo = document.getElementById('rebirth-promo');
-    const placeholder = document.getElementById('category-placeholder');
-
-    if (hero) hero.style.display = 'none';
-    if (categories) categories.style.display = 'flex';
-    if (promo) promo.style.display = 'block'; // Keep promo visible
-    if (placeholder) placeholder.style.display = 'block';
-
-    // Scroll to top of categories
-    if (categories) categories.scrollIntoView({ behavior: 'smooth' });
-}
-
-// Expose to window
-window.enterShop = enterShop;
-
-// ===================================
-// SECTION NAVIGATION
-// ===================================
-function navigateToSection(sectionId) {
-    // Hide all sections
-    const sections = document.querySelectorAll('.content-section');
-    sections.forEach(sec => {
-        sec.style.display = 'none';
-        sec.classList.remove('active');
-    });
-
-    // Show target section
-    const targetSection = document.getElementById(`${sectionId}-section`);
-    if (targetSection) {
-        targetSection.style.display = 'block';
-        setTimeout(() => targetSection.classList.add('active'), 10);
-    }
-
-    // Update active nav link
-    const navLinks = document.querySelectorAll('.nav-link, .mobile-nav-link');
-    navLinks.forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('data-section') === sectionId) {
-            link.classList.add('active');
-        }
-    });
-
-    // Special handling for 'buy' section reset
-    if (sectionId === 'buy') {
-        const hero = document.getElementById('buy-landing-hero');
-        const promo = document.getElementById('rebirth-promo');
-        const placeholder = document.getElementById('category-placeholder');
-        const rebirthMarket = document.getElementById('rebirth-marketplace');
-        const categories = document.querySelector('.product-categories');
-
-        // DEFAULT STATE: Show Hero AND Promo
-        if (hero) hero.style.display = 'block';
-        if (promo) promo.style.display = 'block';
-
-        // Hide Main Shop Elements initially
-        if (categories) categories.style.display = 'none';
-
-        // Hide Placeholder (revealed when entering shop)
-        if (placeholder) placeholder.style.display = 'none';
-
-        // Hide Rebirth Marketplace
-        if (rebirthMarket) rebirthMarket.style.display = 'none';
-
-        // Reset Tabs
-        const tabs = document.querySelectorAll('.category-tab');
-        tabs.forEach(t => t.classList.remove('active'));
-
-        // Hide standard category content
-        const cats = document.querySelectorAll('.category-content');
-        cats.forEach(c => c.style.display = 'none');
-    }
-
-    // Close mobile menu
-    const navLinksContainer = document.querySelector('.nav-links');
-    if (navLinksContainer) navLinksContainer.classList.remove('active');
-
-    // Scroll to top
-    window.scrollTo(0, 0);
-}

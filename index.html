@@ -262,7 +262,21 @@
                 </div>
 
                 <!-- Product Categories -->
-                <div class="product-categories">
+
+                <!-- HERO LANDING SECTION (Default View for Buy) -->
+                <div id="buy-landing-hero"
+                    style="position: relative; width: 100%; height: 600px; margin-bottom: 40px; border-radius: 4px; overflow: hidden; display: block;">
+                    <img src="./buy_banner.png" alt="Enter the World of Chased"
+                        style="width: 100%; height: 100%; object-fit: cover;">
+                    <div
+                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center;">
+                        <button onclick="enterShop()" class="btn btn-primary"
+                            style="padding: 20px 60px; font-size: 1.5rem; letter-spacing: 4px; background: rgba(0,0,0,0.6); border: 2px solid #fff; backdrop-filter: blur(5px);">CHASED</button>
+                    </div>
+                </div>
+
+                <!-- Categories (Hidden by default now) -->
+                <div class="product-categories" style="display: none;">
                     <button class="category-tab" id="dresses-tab" data-category="dresses">DRESSES</button>
                     <button class="category-tab" id="footwear-tab" data-category="footwear">FOOTWEAR</button>
                     <button class="category-tab" id="tops-tab" data-category="tops">TOPS</button>
