@@ -444,9 +444,9 @@ function openListingForm() {
                         </div>
 
                          <div class="form-group" style="margin-bottom: 15px;">
-                            <label class="dashboard-label">Image URL</label>
-                            <input type="url" id="list-image" class="dashboard-input" placeholder="https://..." required>
-                            <p style="font-size: 0.7rem; color: #888; margin-top: 5px;">For demo, paste any image link.</p>
+                            <label class="dashboard-label">Product Image</label>
+                            <input type="file" id="list-image-file" class="dashboard-input" accept="image/*" required>
+                            <p style="font-size: 0.7rem; color: #888; margin-top: 5px;">Upload a clear photo of your item.</p>
                         </div>
 
                         <div class="form-group" style="margin-bottom: 15px;">
@@ -480,83 +480,151 @@ function openListingForm() {
     listingModal.classList.add('active');
 }
 
-function handlePostItem(e) {
+async function handlePostItem(e) {
     e.preventDefault();
+
+    // Check authentication
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) {
+        alert("You must be logged in to list items!");
+        return;
+    }
 
     const title = document.getElementById('list-title').value;
     const price = document.getElementById('list-price').value;
-    const image = document.getElementById('list-image').value;
+    const fileInput = document.getElementById('list-image-file');
     const category = document.getElementById('list-category').value;
+    const submitBtn = e.target.querySelector('button[type="submit"]');
 
-    if (!title || !price || !image) {
+    if (!title || !price || fileInput.files.length === 0) {
         alert("Please fill all fields");
         return;
     }
 
-    const newItem = {
-        id: Date.now(),
-        name: title,
-        price: `£${price}`,
-        image: image,
-        category: category,
-        seller: "You",
-        isRebirth: true
-    };
+    const file = fileInput.files[0];
 
-    // Save to LocalStorage
-    const existingItems = JSON.parse(localStorage.getItem('chased_rebirth_items') || '[]');
-    existingItems.push(newItem);
-    localStorage.setItem('chased_rebirth_items', JSON.stringify(existingItems));
+    // UI Feedback
+    submitBtn.textContent = 'Uploading...';
+    submitBtn.disabled = true;
 
-    // Success UI
-    alert("Success! Your item has been listed in Rebirth.");
-    document.getElementById('listing-modal').classList.remove('active');
-    document.getElementById('listing-form').reset();
+    try {
+        // 1. Upload Image
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `${user.id}/${fileName}`;
 
-    // Reload items if we are on Rebirth tab
-    loadRebirthItems();
+        const { error: uploadError } = await supabaseClient
+            .storage
+            .from('rebirth_images')
+            .upload(filePath, file);
 
-    // Switch to Rebirth tab to show the user
-    navigateToSection('buy');
-    const rebirthTab = document.getElementById('rebirth-tab');
-    if (rebirthTab) rebirthTab.click();
+        if (uploadError) throw uploadError;
+
+        // 2. Get Public URL
+        const { data: { publicUrl } } = supabaseClient
+            .storage
+            .from('rebirth_images')
+            .getPublicUrl(filePath);
+
+        // 3. Insert into Database
+        const { error: dbError } = await supabaseClient
+            .from('rebirth_items')
+            .insert({
+                title: title,
+                price: `£${price}`,
+                image_url: publicUrl,
+                category: category,
+                seller_name: user.user_metadata.full_name || "Community Member",
+                user_id: user.id
+            });
+
+        if (dbError) throw dbError;
+
+        // Success
+        alert("Success! Your item is live on Rebirth.");
+        document.getElementById('listing-modal').classList.remove('active');
+        document.getElementById('listing-form').reset();
+
+        // Refresh items
+        loadRebirthItems();
+
+        // Switch to tab
+        navigateToSection('buy');
+        const rebirthTab = document.getElementById('rebirth-tab');
+        if (rebirthTab) rebirthTab.click();
+
+    } catch (error) {
+        console.error('Error posting item:', error);
+        alert(`Error: ${error.message}`);
+    } finally {
+        submitBtn.textContent = 'Post to Rebirth';
+        submitBtn.disabled = false;
+    }
 }
 
-function loadRebirthItems() {
+async function loadRebirthItems() {
     const grid = document.getElementById('rebirth-grid');
     if (!grid) return;
 
-    const items = JSON.parse(localStorage.getItem('chased_rebirth_items') || '[]');
+    // Show loading state
+    grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">Loading community finds...</p>';
 
-    if (items.length === 0) {
-        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px; color: #666;">No items listed yet. Be the first!</p>';
-        return;
-    }
+    try {
+        const { data: items, error } = await supabaseClient
+            .from('rebirth_items')
+            .select('*')
+            .order('created_at', { ascending: false });
 
-    grid.innerHTML = items.map(item => `
-        <div class="product-card">
-            <div class="product-image-container">
-                <img src="${item.image}" alt="${item.name}" class="product-image">
-                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
-                <span class="product-badge" style="background: var(--color-cta); color: #000;">Rebirth</span>
-            </div>
-            <div class="product-info">
-                <div class="product-details">
-                    <h3 class="product-name">${item.name}</h3>
-                    <p class="product-description">Listed by ${item.seller}</p>
+        if (error) throw error;
+
+        if (!items || items.length === 0) {
+            grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px; color: #666;">No items listed yet. Be the first!</p>';
+            return;
+        }
+
+        grid.innerHTML = items.map(item => `
+            <div class="product-card">
+                <div class="product-image-container">
+                    <img src="${item.image_url}" alt="${item.title}" class="product-image">
+                    <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                    <span class="product-badge" style="background: var(--color-cta); color: #000;">Rebirth</span>
                 </div>
-                <span class="product-price">${item.price}</span>
+                <div class="product-info">
+                    <div class="product-details">
+                        <h3 class="product-name">${item.title}</h3>
+                        <p class="product-description">Listed by ${item.seller_name || 'User'}</p>
+                    </div>
+                    <span class="product-price">${item.price}</span>
+                </div>
+                <div class="product-actions">
+                    <button class="btn btn-primary" onclick="addToCartFromRebirth('${item.title}', '${item.price}', '${item.image_url}')">Add to Cart</button>
+                    <button class="btn btn-secondary">Details</button>
+                </div>
             </div>
-            <div class="product-actions">
-                <button class="btn btn-primary">Add to Cart</button>
-                <button class="btn btn-secondary">Details</button>
-            </div>
-        </div>
-    `).join('');
+        `).join('');
 
-    // Re-initialize hover/click events for new dynamic elements
-    initializeCart(); // To re-bind add to cart
-    initializeImageViewer(); // To re-bind image clicks
+        // Re-bind viewers (Cart needs helper because logic was tightly coupled to DOM structure in original addToCart)
+        initializeImageViewer();
+
+    } catch (err) {
+        console.error('Error loading items:', err);
+        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: red;">Failed to load items.</p>';
+    }
+}
+
+// Helper for Cart (since Rebirth items are dynamically loaded)
+function addToCartFromRebirth(name, price, image) {
+    const product = {
+        id: Date.now(),
+        name: name,
+        price: price,
+        image: image,
+        quantity: 1
+    };
+    cart.push(product);
+    cartCount++;
+    updateCartCount();
+    alert('Added to cart!');
 }
 
 
@@ -1373,6 +1441,8 @@ async function handleLogout() {
 }
 
 window.handleLogout = handleLogout;
+window.showSellMenu = showSellMenu;
+window.openListingForm = openListingForm;
 
 // ===================================
 // PRODUCT CATEGORIES (Dresses, Footwear, Tops, Pants)
