@@ -854,6 +854,21 @@ function navigateToSection(sectionName) {
         activeLink.classList.add('active');
     }
 
+    // Reset 'Buy' section to show only tabs (placeholder state)
+    if (sectionName === 'buy') {
+        const categoryTabs = document.querySelectorAll('.category-tab');
+        const allCategories = document.querySelectorAll('.category-content');
+        const placeholder = document.getElementById('category-placeholder');
+
+        categoryTabs.forEach(t => t.classList.remove('active'));
+        allCategories.forEach(c => {
+            c.style.display = 'none';
+            c.classList.remove('active');
+        });
+
+        if (placeholder) placeholder.style.display = 'block';
+    }
+
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
