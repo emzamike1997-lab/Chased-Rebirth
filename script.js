@@ -1,4 +1,4 @@
-// ===================================
+﻿// ===================================
 // CHASED E-Commerce - Interactive Features
 // ===================================
 
@@ -276,7 +276,7 @@ function showCartModal() {
                     </div>
                     <div class="cart-items" id="cart-items-container"></div>
                     <div class="cart-total">
-                        <h3>Total: <span id="cart-total-amount">£0</span></h3>
+                        <h3>Total: <span id="cart-total-amount">Â£0</span></h3>
                     </div>
                     <div class="cart-actions">
                         <button class="btn btn-primary">Proceed to Checkout</button>
@@ -322,14 +322,14 @@ function updateCartDisplay() {
 
     if (cart.length === 0) {
         container.innerHTML = '<p style="text-align:center; padding:2rem;">Your cart is empty</p>';
-        totalElement.textContent = '£0';
+        totalElement.textContent = 'Â£0';
         return;
     }
 
     // Add cart items
     let total = 0;
     cart.forEach((item, index) => {
-        const price = parseFloat(item.price.replace('£', ''));
+        const price = parseFloat(item.price.replace('Â£', ''));
         total += price;
 
         const itemHTML = `
@@ -347,7 +347,7 @@ function updateCartDisplay() {
         container.insertAdjacentHTML('beforeend', itemHTML);
     });
 
-    totalElement.textContent = `£${total.toFixed(2)}`;
+    totalElement.textContent = `Â£${total.toFixed(2)}`;
 }
 
 function removeFromCart(index) {
@@ -439,7 +439,7 @@ function openListingForm() {
                         </div>
                         
                         <div class="form-group" style="margin-bottom: 15px;">
-                            <label class="dashboard-label">Price (£)</label>
+                            <label class="dashboard-label">Price (Â£)</label>
                             <input type="number" id="list-price" class="dashboard-input" placeholder="e.g. 150" required>
                         </div>
 
@@ -531,7 +531,7 @@ async function handlePostItem(e) {
             .from('rebirth_items')
             .insert({
                 title: title,
-                price: `£${price}`,
+                price: `Â£${price}`,
                 image_url: publicUrl,
                 category: category,
                 seller_name: user.user_metadata.full_name || "Community Member",
@@ -690,8 +690,8 @@ function openImageViewer(imageElement) {
                             <button class="control-btn" id="rotate-left" title="Rotate Left">
                                 <i class="fas fa-undo"></i>
                             </button>
-                            <button class="control-btn" id="rotate-360" title="360° View">
-                                <i class="fas fa-sync"></i> 360°
+                            <button class="control-btn" id="rotate-360" title="360Â° View">
+                                <i class="fas fa-sync"></i> 360Â°
                             </button>
                             <button class="control-btn" id="rotate-right" title="Rotate Right">
                                 <i class="fas fa-redo"></i>
@@ -1302,7 +1302,7 @@ function updateUserUI(user) {
                             <img src="assets/dresses/silk_evening_gown_red_1767785862153.png" onerror="this.src='https://via.placeholder.com/50'" class="item-image">
                             <div class="item-details">
                                 <p class="item-name">Purchased: Scarlet Silk Gown</p>
-                                <p class="item-meta">Yesterday • £350</p>
+                                <p class="item-meta">Yesterday â€¢ Â£350</p>
                             </div>
                         </li>
                          <li class="dashboard-item">
@@ -1355,7 +1355,7 @@ function updateUserUI(user) {
                     </div>
                     <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                         <div style="flex: 1; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; text-align: center;">
-                            <h4 style="font-size: 1.5rem; color: var(--color-cta);">£1,250</h4>
+                            <h4 style="font-size: 1.5rem; color: var(--color-cta);">Â£1,250</h4>
                             <p style="font-size: 0.7rem; opacity: 0.7;">Total Sales</p>
                         </div>
                          <div style="flex: 1; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; text-align: center;">
@@ -1368,7 +1368,7 @@ function updateUserUI(user) {
                             <img src="https://images.unsplash.com/photo-1583743814966-8933f1b0ee2a?auto=format&fit=crop&q=80&w=100" class="item-image">
                             <div class="item-details">
                                 <p class="item-name">Vintage Chanel Bag</p>
-                                <p class="item-meta">Listed: 5 days ago • £850</p>
+                                <p class="item-meta">Listed: 5 days ago â€¢ Â£850</p>
                             </div>
                              <span class="status-badge status-processing">Active</span>
                         </li>
@@ -1438,7 +1438,7 @@ function updateUserUI(user) {
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <div style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; border: 1px solid var(--color-cta);">
                                     <i class="fab fa-cc-visa" style="font-size: 1.5rem;"></i>
-                                    <span>•••• 4242</span>
+                                    <span>â€¢â€¢â€¢â€¢ 4242</span>
                                 </div>
                                 <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;">+ Add New Card</button>
                             </div>
@@ -1468,23 +1468,6 @@ function initializeProductCategories() {
 
     categoryTabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            const categoryName = tab.getAttribute('data-category');
-
-            // Hide placeholder
-            if (placeholder) {
-                placeholder.style.display = 'none';
-            }
-
-            // Update active tab
-            categoryTabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-
-            // Show selected category content
-            const allCategories = document.querySelectorAll('.category-content');
-            allCategories.forEach(cat => {
-                cat.style.display = 'none';
-                cat.classList.remove('active');
-            });
 
             const selectedCategory = document.getElementById(`${categoryName}-category`);
             if (selectedCategory) {
@@ -1494,124 +1477,123 @@ function initializeProductCategories() {
         });
     });
 }
- 
- / /   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
- / /   M Y   L I S T I N G S   ( E d i t / D e l e t e )  
- / /   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
- a s y n c   f u n c t i o n   o p e n M y L i s t i n g s ( )   {  
-         / /   C l o s e   s e l l   m e n u  
-         c o n s t   s e l l M o d a l   =   d o c u m e n t . g e t E l e m e n t B y I d ( ' s e l l - m o d a l ' ) ;  
-         i f   ( s e l l M o d a l )   s e l l M o d a l . c l a s s L i s t . r e m o v e ( ' a c t i v e ' ) ;  
-  
-         c o n s t   {   d a t a :   {   u s e r   }   }   =   a w a i t   s u p a b a s e C l i e n t . a u t h . g e t U s e r ( ) ;  
-         i f   ( ! u s e r )   {  
-                 a l e r t ( " P l e a s e   l o g i n   t o   v i e w   y o u r   l i s t i n g s . " ) ;  
-                 r e t u r n ;  
-         }  
-  
-         l e t   m y M o d a l   =   d o c u m e n t . g e t E l e m e n t B y I d ( ' m y - l i s t i n g s - m o d a l ' ) ;  
-         i f   ( ! m y M o d a l )   {  
-                 c o n s t   m o d a l H T M L   =   `  
-                         < d i v   c l a s s = " m o d a l "   i d = " m y - l i s t i n g s - m o d a l " >  
-                                 < d i v   c l a s s = " m o d a l - c o n t e n t "   s t y l e = " m a x - w i d t h :   8 0 0 p x ; " >  
-                                         < d i v   c l a s s = " m o d a l - h e a d e r " >  
-                                                 < h 2   c l a s s = " m o d a l - t i t l e " > M y   L i s t i n g s < / h 2 >  
-                                                 < b u t t o n   c l a s s = " m o d a l - c l o s e "   i d = " c l o s e - m y - l i s t i n g s " > & t i m e s ; < / b u t t o n >  
-                                         < / d i v >  
-                                         < d i v   i d = " m y - l i s t i n g s - g r i d "   c l a s s = " p r o d u c t - g r i d "   s t y l e = " m a x - h e i g h t :   6 0 v h ;   o v e r f l o w - y :   a u t o ;   p a d d i n g - r i g h t :   5 p x ; " >  
-                                                 < ! - -   I t e m s   i n j e c t e d   h e r e   - - >  
-                                         < / d i v >  
-                                 < / d i v >  
-                         < / d i v >  
-                 ` ;  
-                 d o c u m e n t . b o d y . i n s e r t A d j a c e n t H T M L ( ' b e f o r e e n d ' ,   m o d a l H T M L ) ;  
-                 m y M o d a l   =   d o c u m e n t . g e t E l e m e n t B y I d ( ' m y - l i s t i n g s - m o d a l ' ) ;  
-                  
-                 d o c u m e n t . g e t E l e m e n t B y I d ( ' c l o s e - m y - l i s t i n g s ' ) . a d d E v e n t L i s t e n e r ( ' c l i c k ' ,   ( )   = >   {  
-                         m y M o d a l . c l a s s L i s t . r e m o v e ( ' a c t i v e ' ) ;  
-                 } ) ;  
-         }  
-  
-         / /   L o a d   i t e m s  
-         c o n s t   g r i d   =   d o c u m e n t . g e t E l e m e n t B y I d ( ' m y - l i s t i n g s - g r i d ' ) ;  
-         g r i d . i n n e r H T M L   =   ' < p > L o a d i n g . . . < / p > ' ;  
-         m y M o d a l . c l a s s L i s t . a d d ( ' a c t i v e ' ) ;  
-  
-         c o n s t   {   d a t a :   i t e m s ,   e r r o r   }   =   a w a i t   s u p a b a s e C l i e n t  
-                 . f r o m ( ' r e b i r t h _ i t e m s ' )  
-                 . s e l e c t ( ' * ' )  
-                 . e q ( ' u s e r _ i d ' ,   u s e r . i d )  
-                 . o r d e r ( ' c r e a t e d _ a t ' ,   {   a s c e n d i n g :   f a l s e   } ) ;  
-  
-         i f   ( e r r o r )   {  
-                 g r i d . i n n e r H T M L   =   ' < p   s t y l e = " c o l o r : r e d " > E r r o r   l o a d i n g   l i s t i n g s . < / p > ' ;  
-                 r e t u r n ;  
-         }  
-  
-         i f   ( i t e m s . l e n g t h   = = =   0 )   {  
-                 g r i d . i n n e r H T M L   =   ' < p > Y o u   h a v e n \ ' t   l i s t e d   a n y t h i n g   y e t . < / p > ' ;  
-                 r e t u r n ;  
-         }  
-  
-         g r i d . i n n e r H T M L   =   i t e m s . m a p ( i t e m   = >   `  
-                 < d i v   c l a s s = " p r o d u c t - c a r d "   s t y l e = " b o r d e r :   1 p x   s o l i d   v a r ( - - c o l o r - b o r d e r ) ; " >  
-                         < d i v   c l a s s = " p r o d u c t - i m a g e - c o n t a i n e r " >  
-                                 < i m g   s r c = " $ { i t e m . i m a g e _ u r l } "   a l t = " $ { i t e m . t i t l e } "   c l a s s = " p r o d u c t - i m a g e " >  
-                                 < s p a n   c l a s s = " p r o d u c t - b a d g e "   s t y l e = " b a c k g r o u n d :   # 3 3 3 ;   c o l o r :   # f f f ; " > $ { i t e m . c a t e g o r y } < / s p a n >  
-                         < / d i v >  
-                         < d i v   c l a s s = " p r o d u c t - i n f o " >  
-                                 < h 3   c l a s s = " p r o d u c t - n a m e " > $ { i t e m . t i t l e } < / h 3 >  
-                                 < s p a n   c l a s s = " p r o d u c t - p r i c e " > $ { i t e m . p r i c e } < / s p a n >  
-                         < / d i v >  
-                         < d i v   c l a s s = " p r o d u c t - a c t i o n s "   s t y l e = " g r i d - t e m p l a t e - c o l u m n s :   1 f r   1 f r ;   g a p :   1 0 p x ; " >  
-                                 < b u t t o n   c l a s s = " b t n   b t n - s e c o n d a r y "   o n c l i c k = " w i n d o w . h a n d l e E d i t P r i c e ( $ { i t e m . i d } ,   ' $ { i t e m . p r i c e } ' ) " > E d i t   P r i c e < / b u t t o n >  
-                                 < b u t t o n   c l a s s = " b t n   b t n - p r i m a r y "   s t y l e = " b a c k g r o u n d :   # f f 4 4 4 4 ;   b o r d e r - c o l o r :   # f f 4 4 4 4 ; "   o n c l i c k = " w i n d o w . h a n d l e D e l e t e I t e m ( $ { i t e m . i d } ) " > D e l e t e < / b u t t o n >  
-                         < / d i v >  
-                 < / d i v >  
-         ` ) . j o i n ( ' ' ) ;  
- }  
-  
- a s y n c   f u n c t i o n   h a n d l e D e l e t e I t e m ( i d )   {  
-         i f ( ! c o n f i r m ( " A r e   y o u   s u r e   y o u   w a n t   t o   d e l e t e   t h i s   l i s t i n g ? " ) )   r e t u r n ;  
-  
-         c o n s t   {   e r r o r   }   =   a w a i t   s u p a b a s e C l i e n t  
-                 . f r o m ( ' r e b i r t h _ i t e m s ' )  
-                 . d e l e t e ( )  
-                 . e q ( ' i d ' ,   i d ) ;  
-  
-         i f   ( e r r o r )   {  
-                 a l e r t ( " E r r o r   d e l e t i n g :   "   +   e r r o r . m e s s a g e ) ;  
-         }   e l s e   {  
-                 a l e r t ( " I t e m   d e l e t e d . " ) ;  
-                 o p e n M y L i s t i n g s ( ) ;   / /   R e f r e s h   l i s t  
-                 l o a d R e b i r t h I t e m s ( ) ;   / /   R e f r e s h   m a i n   f e e d   i n   b a c k g r o u n d  
-         }  
- }  
-  
- a s y n c   f u n c t i o n   h a n d l e E d i t P r i c e ( i d ,   o l d P r i c e )   {  
-         / /   f a s t   c l e a n i n g   o f   c u r r e n c y   s y m b o l   i f   p r e s e n t  
-         c o n s t   c l e a n P r i c e   =   o l d P r i c e . r e p l a c e ( ' � � ' ,   ' ' ) . t r i m ( ) ;  
-         c o n s t   n e w P r i c e   =   p r o m p t ( " E n t e r   n e w   p r i c e   ( � � ) : " ,   c l e a n P r i c e ) ;  
-          
-         i f   ( ! n e w P r i c e   | |   n e w P r i c e   = = =   c l e a n P r i c e )   r e t u r n ;  
-  
-         c o n s t   f o r m a t t e d P r i c e   =   ` � � $ { n e w P r i c e } ` ;  
-  
-         c o n s t   {   e r r o r   }   =   a w a i t   s u p a b a s e C l i e n t  
-                 . f r o m ( ' r e b i r t h _ i t e m s ' )  
-                 . u p d a t e ( {   p r i c e :   f o r m a t t e d P r i c e   } )  
-                 . e q ( ' i d ' ,   i d ) ;  
-  
-         i f   ( e r r o r )   {  
-                 a l e r t ( " E r r o r   u p d a t i n g :   "   +   e r r o r . m e s s a g e ) ;  
-         }   e l s e   {  
-                 o p e n M y L i s t i n g s ( ) ;   / /   R e f r e s h   l i s t  
-                 l o a d R e b i r t h I t e m s ( ) ;   / /   R e f r e s h   m a i n   f e e d  
-         }  
- }  
-  
- / /   E x p o s e   t o   w i n d o w  
- w i n d o w . o p e n M y L i s t i n g s   =   o p e n M y L i s t i n g s ;  
- w i n d o w . h a n d l e D e l e t e I t e m   =   h a n d l e D e l e t e I t e m ;  
- w i n d o w . h a n d l e E d i t P r i c e   =   h a n d l e E d i t P r i c e ;  
- 
+
+// ===================================
+// MY LISTINGS (Edit/Delete)
+// ===================================
+async function openMyListings() {
+    // Close sell menu
+    const sellModal = document.getElementById('sell-modal');
+    if (sellModal) sellModal.classList.remove('active');
+
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) {
+        alert("Please login to view your listings.");
+        return;
+    }
+
+    let myModal = document.getElementById('my-listings-modal');
+    if (!myModal) {
+        const modalHTML = `
+            <div class="modal" id="my-listings-modal">
+                <div class="modal-content" style="max-width: 800px;">
+                    <div class="modal-header">
+                        <h2 class="modal-title">My Listings</h2>
+                        <button class="modal-close" id="close-my-listings">&times;</button>
+                    </div>
+                    <div id="my-listings-grid" class="product-grid" style="max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+                        <!-- Items injected here -->
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        myModal = document.getElementById('my-listings-modal');
+
+        document.getElementById('close-my-listings').addEventListener('click', () => {
+            myModal.classList.remove('active');
+        });
+    }
+
+    // Load items
+    const grid = document.getElementById('my-listings-grid');
+    grid.innerHTML = '<p>Loading...</p>';
+    myModal.classList.add('active');
+
+    const { data: items, error } = await supabaseClient
+        .from('rebirth_items')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        grid.innerHTML = '<p style="color:red">Error loading listings.</p>';
+        return;
+    }
+
+    if (items.length === 0) {
+        grid.innerHTML = '<p>You haven\'t listed anything yet.</p>';
+        return;
+    }
+
+    grid.innerHTML = items.map(item => `
+        <div class="product-card" style="border: 1px solid var(--color-border);">
+            <div class="product-image-container">
+                <img src="${item.image_url}" alt="${item.title}" class="product-image">
+                <span class="product-badge" style="background: #333; color: #fff;">${item.category}</span>
+            </div>
+            <div class="product-info">
+                <h3 class="product-name">${item.title}</h3>
+                <span class="product-price">${item.price}</span>
+            </div>
+            <div class="product-actions" style="grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button class="btn btn-secondary" onclick="window.handleEditPrice(${item.id}, '${item.price}')">Edit Price</button>
+                <button class="btn btn-primary" style="background: #ff4444; border-color: #ff4444;" onclick="window.handleDeleteItem(${item.id})">Delete</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function handleDeleteItem(id) {
+    if (!confirm("Are you sure you want to delete this listing?")) return;
+
+    const { error } = await supabaseClient
+        .from('rebirth_items')
+        .delete()
+        .eq('id', id);
+
+    if (error) {
+        alert("Error deleting: " + error.message);
+    } else {
+        alert("Item deleted.");
+        openMyListings(); // Refresh list
+        loadRebirthItems(); // Refresh main feed in background
+    }
+}
+
+async function handleEditPrice(id, oldPrice) {
+    // fast cleaning of currency symbol if present
+    const cleanPrice = oldPrice.replace('£', '').trim();
+    const newPrice = prompt("Enter new price (£):", cleanPrice);
+
+    if (!newPrice || newPrice === cleanPrice) return;
+
+    const formattedPrice = `£${newPrice}`;
+
+    const { error } = await supabaseClient
+        .from('rebirth_items')
+        .update({ price: formattedPrice })
+        .eq('id', id);
+
+    if (error) {
+        alert("Error updating: " + error.message);
+    } else {
+        openMyListings(); // Refresh list
+        loadRebirthItems(); // Refresh main feed
+    }
+}
+
+// Expose to window
+window.openMyListings = openMyListings;
+window.handleDeleteItem = handleDeleteItem;
+window.handleEditPrice = handleEditPrice;
