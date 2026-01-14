@@ -72,6 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check for "Welcome Back" widget
     checkRecentLogin();
 
+    // Load P2P Items
+    if (typeof loadRebirthItems === 'function') {
+        loadRebirthItems();
+    }
+
     // Set home section as default landing page
     navigateToSection('home');
 
@@ -385,7 +390,7 @@ function showSellMenu() {
                     </div>
                     <div class="sell-options">
                         <p>Choose an option below to start selling:</p>
-                        <button class="btn btn-primary"><i class="fas fa-plus-circle"></i> List New Item</button>
+                        <button class="btn btn-primary" onclick="openListingForm()"><i class="fas fa-plus-circle"></i> List New Item</button>
                         <button class="btn btn-secondary"><i class="fas fa-box"></i> My Listings</button>
                         <button class="btn btn-secondary"><i class="fas fa-chart-line"></i> Sales Dashboard</button>
                     </div>
@@ -410,6 +415,150 @@ function showSellMenu() {
 
     sellModal.classList.add('active');
 }
+
+// Open the "List New Item" Form
+function openListingForm() {
+    // Close sell menu first
+    const sellModal = document.getElementById('sell-modal');
+    if (sellModal) sellModal.classList.remove('active');
+
+    let listingModal = document.getElementById('listing-modal');
+
+    if (!listingModal) {
+        const modalHTML = `
+            <div class="modal" id="listing-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title">List Item for Rebirth</h2>
+                        <button class="modal-close" id="close-listing-modal">&times;</button>
+                    </div>
+                    <form id="listing-form" class="dashboard-form-grid" style="display: block;">
+                         <div class="form-group" style="margin-bottom: 15px;">
+                            <label class="dashboard-label">Product Title</label>
+                            <input type="text" id="list-title" class="dashboard-input" placeholder="e.g. Vintage Chanel Bag" required>
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label class="dashboard-label">Price (£)</label>
+                            <input type="number" id="list-price" class="dashboard-input" placeholder="e.g. 150" required>
+                        </div>
+
+                         <div class="form-group" style="margin-bottom: 15px;">
+                            <label class="dashboard-label">Image URL</label>
+                            <input type="url" id="list-image" class="dashboard-input" placeholder="https://..." required>
+                            <p style="font-size: 0.7rem; color: #888; margin-top: 5px;">For demo, paste any image link.</p>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 15px;">
+                             <label class="dashboard-label">Category</label>
+                             <select id="list-category" class="dashboard-input">
+                                <option value="footwear">Footwear</option>
+                                <option value="dresses">Dresses</option>
+                                <option value="tops">Tops</option>
+                                <option value="jewelry">Jewelry</option>
+                                <option value="pants">Pants</option>
+                             </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-full">Post to Rebirth</button>
+                    </form>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        listingModal = document.getElementById('listing-modal');
+
+        // Close handlers
+        document.getElementById('close-listing-modal').addEventListener('click', () => {
+            listingModal.classList.remove('active');
+        });
+
+        // Form Submit
+        document.getElementById('listing-form').addEventListener('submit', handlePostItem);
+    }
+
+    listingModal.classList.add('active');
+}
+
+function handlePostItem(e) {
+    e.preventDefault();
+
+    const title = document.getElementById('list-title').value;
+    const price = document.getElementById('list-price').value;
+    const image = document.getElementById('list-image').value;
+    const category = document.getElementById('list-category').value;
+
+    if (!title || !price || !image) {
+        alert("Please fill all fields");
+        return;
+    }
+
+    const newItem = {
+        id: Date.now(),
+        name: title,
+        price: `£${price}`,
+        image: image,
+        category: category,
+        seller: "You",
+        isRebirth: true
+    };
+
+    // Save to LocalStorage
+    const existingItems = JSON.parse(localStorage.getItem('chased_rebirth_items') || '[]');
+    existingItems.push(newItem);
+    localStorage.setItem('chased_rebirth_items', JSON.stringify(existingItems));
+
+    // Success UI
+    alert("Success! Your item has been listed in Rebirth.");
+    document.getElementById('listing-modal').classList.remove('active');
+    document.getElementById('listing-form').reset();
+
+    // Reload items if we are on Rebirth tab
+    loadRebirthItems();
+
+    // Switch to Rebirth tab to show the user
+    navigateToSection('buy');
+    const rebirthTab = document.getElementById('rebirth-tab');
+    if (rebirthTab) rebirthTab.click();
+}
+
+function loadRebirthItems() {
+    const grid = document.getElementById('rebirth-grid');
+    if (!grid) return;
+
+    const items = JSON.parse(localStorage.getItem('chased_rebirth_items') || '[]');
+
+    if (items.length === 0) {
+        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px; color: #666;">No items listed yet. Be the first!</p>';
+        return;
+    }
+
+    grid.innerHTML = items.map(item => `
+        <div class="product-card">
+            <div class="product-image-container">
+                <img src="${item.image}" alt="${item.name}" class="product-image">
+                <button class="cart-overlay-btn"><i class="fas fa-shopping-cart"></i></button>
+                <span class="product-badge" style="background: var(--color-cta); color: #000;">Rebirth</span>
+            </div>
+            <div class="product-info">
+                <div class="product-details">
+                    <h3 class="product-name">${item.name}</h3>
+                    <p class="product-description">Listed by ${item.seller}</p>
+                </div>
+                <span class="product-price">${item.price}</span>
+            </div>
+            <div class="product-actions">
+                <button class="btn btn-primary">Add to Cart</button>
+                <button class="btn btn-secondary">Details</button>
+            </div>
+        </div>
+    `).join('');
+
+    // Re-initialize hover/click events for new dynamic elements
+    initializeCart(); // To re-bind add to cart
+    initializeImageViewer(); // To re-bind image clicks
+}
+
 
 // ===================================
 // IMAGE VIEWER WITH ZOOM & ROTATION

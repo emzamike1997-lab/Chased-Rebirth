@@ -263,6 +263,8 @@
 
                 <!-- Product Categories -->
                 <div class="product-categories">
+                    <button class="category-tab" id="rebirth-tab" data-category="rebirth"
+                        style="border: 1px solid var(--color-cta); color: var(--color-cta);">REBIRTH</button>
                     <button class="category-tab" id="dresses-tab" data-category="dresses">DRESSES</button>
                     <button class="category-tab" id="footwear-tab" data-category="footwear">FOOTWEAR</button>
                     <button class="category-tab" id="tops-tab" data-category="tops">TOPS</button>
@@ -276,6 +278,20 @@
                         <i class="fas fa-arrow-up placeholder-icon"></i>
                         <h3>Select a Category</h3>
                         <p>Click on one of the categories above to browse our collection</p>
+                    </div>
+                </div>
+
+                <!-- REBIRTH Category (User Listings) -->
+                <div class="category-content" id="rebirth-category" style="display: none;">
+                    <div class="section-banner"
+                        style="background: rgba(var(--color-cta-rgb), 0.1); border: 1px solid var(--color-cta); padding: 20px; text-align: center; margin-bottom: 20px; border-radius: 8px;">
+                        <h3 style="color: var(--color-cta); margin-bottom: 5px;">CHASED REBIRTH</h3>
+                        <p style="font-size: 0.9rem;">Pre-loved luxury from our community. <a href="#"
+                                onclick="showSellMenu(); return false;"
+                                style="color: #fff; text-decoration: underline;">Sell your own</a></p>
+                    </div>
+                    <div class="product-grid" id="rebirth-grid">
+                        <!-- User items will be injected here -->
                     </div>
                 </div>
 
