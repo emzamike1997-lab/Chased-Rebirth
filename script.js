@@ -573,10 +573,6 @@ function openRebirthMarketplace() {
     const promo = document.getElementById('rebirth-promo');
     if (promo) promo.style.display = 'none';
 
-    // Hide Hero Banner (NEW)
-    const hero = document.getElementById('buy-landing-hero');
-    if (hero) hero.style.display = 'none';
-
     // Hide standard category content if active
     const standardCats = document.querySelectorAll('.category-content');
     standardCats.forEach(c => c.style.display = 'none');
@@ -1344,7 +1340,7 @@ function updateUserUI(user) {
                 </div>
                 
                 <div class="welcome-video-container" style="max-height: 400px; border-color: var(--color-cta);">
-                    <video autoplay loop playsinline muted class="welcome-video" style="object-fit: cover; width: 100%; height: 100%;">
+                    <video autoplay playsinline class="welcome-video" id="profile-welcome-video" style="object-fit: cover; width: 100%; height: 100%;">
                         <source src="assets/videos/Welcome 2.mp4" type="video/mp4">
                         Your browser does not support the video tag.
                     </video>
@@ -1353,6 +1349,28 @@ function updateUserUI(user) {
                         <h3 style="margin: 0; color: #fff;">Summer Collection 2026</h3>
                     </div>
                 </div>
+            </div>
+            
+            <script>
+                // Self-contained video logic for 2-time loop
+                (function() {
+                    setTimeout(() => {
+                        const video = document.getElementById('profile-welcome-video');
+                        if (video) {
+                            video.loop = false; // Ensure native loop is off
+                            video.volume = 1.0; 
+                            let playCount = 1;
+                            
+                            video.addEventListener('ended', () => {
+                                if (playCount < 2) {
+                                    playCount++;
+                                    video.play();
+                                }
+                            });
+                        }
+                    }, 500); // Small delay to ensure DOM is ready
+                })();
+            </script>
             </div>
 
             <div class="dashboard-grid">
@@ -1738,7 +1756,7 @@ function enterShop() {
 }
 
 // Expose to window
-window.enterShop = enterShop;
+
 
 // ===================================
 // SECTION NAVIGATION
@@ -1769,21 +1787,10 @@ function navigateToSection(sectionId) {
 
     // Special handling for 'buy' section reset
     if (sectionId === 'buy') {
-        const hero = document.getElementById('buy-landing-hero');
-        const promo = document.getElementById('rebirth-promo');
-        const placeholder = document.getElementById('category-placeholder');
-        const rebirthMarket = document.getElementById('rebirth-marketplace');
-        const categories = document.querySelector('.product-categories');
-
-        // DEFAULT STATE: Show Hero AND Promo
-        if (hero) hero.style.display = 'block';
+        // Show Main Shop Elements
+        if (categories) categories.style.display = 'flex';
         if (promo) promo.style.display = 'block';
-
-        // Hide Main Shop Elements initially
-        if (categories) categories.style.display = 'none';
-
-        // Hide Placeholder (revealed when entering shop)
-        if (placeholder) placeholder.style.display = 'none';
+        if (placeholder) placeholder.style.display = 'block';
 
         // Hide Rebirth Marketplace
         if (rebirthMarket) rebirthMarket.style.display = 'none';
