@@ -825,17 +825,27 @@ function initializeProfileForms() {
     const signupBtn = document.querySelector('#profile-signup-form button[type="submit"]');
 
     // Show Password Toggle Logic
-    const showPassToggle = document.getElementById('show-password-toggle');
-    if (showPassToggle) {
-        showPassToggle.addEventListener('change', (e) => {
-            const passField = document.getElementById('signup-password');
-            const confirmField = document.getElementById('signup-confirm');
-            const type = e.target.checked ? 'text' : 'password';
+    // Show Password Toggle Logic (Login & Signup)
+    const toggleSignupPass = document.getElementById('toggle-signup-password');
+    const toggleSignupConfirm = document.getElementById('toggle-signup-confirm');
 
-            if (passField) passField.type = type;
-            if (confirmField) confirmField.type = type;
-        });
+    function setupPasswordToggle(toggleId, inputId) {
+        const toggleBtn = document.getElementById(toggleId);
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function () {
+                const inputInfo = document.getElementById(inputId);
+                const type = inputInfo.getAttribute('type') === 'password' ? 'text' : 'password';
+                inputInfo.setAttribute('type', type);
+
+                this.classList.toggle('fa-eye');
+                this.classList.toggle('fa-eye-slash');
+            });
+        }
     }
+
+    // Setup toggles
+    setupPasswordToggle('toggle-signup-password', 'signup-password');
+    setupPasswordToggle('toggle-signup-confirm', 'signup-confirm');
 
     if (signupBtn) {
         signupBtn.type = "button";
