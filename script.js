@@ -611,14 +611,82 @@ window.openRebirthMarketplace = openRebirthMarketplace;
 window.closeRebirthMarketplace = closeRebirthMarketplace;
 
 async function loadRebirthItems() {
+    // Clear all grids first
+    const categories = ['dresses', 'footwear', 'tops', 'jewelry', 'hats', 'pants'];
+    categories.forEach(cat => {
+        const grid = document.getElementById(`rebirth-${cat}-grid`);
+        if (grid) grid.innerHTML = '<p>Loading...</p>';
+    });
 
-    // Re-bind viewers (Cart needs helper because logic was tightly coupled to DOM structure in original addToCart)
-    initializeImageViewer();
+    try {
+        const { data: items, error } = await supabaseClient
+            .from('rebirth_items')
+            .select('*')
+            .order('created_at', { ascending: false });
 
-} catch (err) {
-    console.error('Error loading items:', err);
-    grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: red;">Failed to load items.</p>';
-}
+        if (error) throw error;
+
+        // Reset grids to empty before filling
+        categories.forEach(cat => {
+            const grid = document.getElementById(`rebirth-${cat}-grid`);
+            if (grid) grid.innerHTML = '';
+        });
+
+        if (!items || items.length === 0) {
+            // Show empty states if no items at all
+            categories.forEach(cat => {
+                const grid = document.getElementById(`rebirth-${cat}-grid`);
+                if (grid) grid.innerHTML = '<p style="font-style: italic; color: #666;">No items listed yet.</p>';
+            });
+            return;
+        }
+
+        items.forEach(item => {
+            // Normalize category matching (case insensitive)
+            const catKey = item.category ? item.category.toLowerCase().trim() : 'others';
+            // Simple mapping to ensure valid ID
+
+            const targetGrid = document.getElementById(`rebirth-${catKey}-grid`);
+            if (targetGrid) {
+                const safeTitle = item.title.replace(/'/g, "\\'");
+                const itemHTML = `
+                    <div class="product-card">
+                        <div class="product-image-container">
+                            <img src="${item.image_url}" alt="${item.title}" class="product-image">
+                            <button class="cart-overlay-btn" onclick="addToCartFromRebirth('${safeTitle}', '${item.price}', '${item.image_url}')">
+                                <i class="fas fa-shopping-cart"></i>
+                            </button>
+                        </div>
+                        <div class="product-info">
+                            <div class="product-details">
+                                <h3 class="product-name">${item.title}</h3>
+                                <p class="product-description">Sold by @${item.seller_name || 'User'}</p>
+                            </div>
+                            <span class="product-price">${item.price}</span>
+                        </div>
+                    </div>
+                `;
+                targetGrid.insertAdjacentHTML('beforeend', itemHTML);
+            }
+        });
+
+        // Show empty states for specific categories that remained empty
+        categories.forEach(cat => {
+            const grid = document.getElementById(`rebirth-${cat}-grid`);
+            if (grid && grid.children.length === 0) {
+                grid.innerHTML = '<p style="font-style: italic; color: #666;">No items listed in this category yet.</p>';
+            }
+        });
+
+        initializeImageViewer();
+
+    } catch (err) {
+        console.error('Error loading items:', err);
+        categories.forEach(cat => {
+            const grid = document.getElementById(`rebirth-${cat}-grid`);
+            if (grid) grid.innerHTML = '<p style="color: red;">Failed to load items.</p>';
+        });
+    }
 }
 
 // Helper for Cart (since Rebirth items are dynamically loaded)
