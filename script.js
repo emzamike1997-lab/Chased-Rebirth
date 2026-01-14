@@ -918,23 +918,195 @@ function updateUserUI(user) {
     const profileContainer = document.querySelector('.profile-container');
 
     if (profileContainer) {
-        // Add wide class for welcome screen
+        // Add wide class for dashboard view
         profileContainer.classList.add('wide-profile');
 
+        const userName = user.user_metadata.full_name || user.email.split('@')[0];
+
         profileContainer.innerHTML = `
-            <div class="header">
-                <h1 class="header-title">Welcome, ${user.user_metadata.full_name || user.email}</h1>
-                <p class="header-subtitle">You are now logged in to your CHASED account</p>
-                <div class="welcome-video-container">
-                    <video autoplay loop playsinline controls class="welcome-video">
+            <div class="header" style="text-align: left; padding: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1rem;">
+                    <div>
+                        <h1 class="header-title" style="font-size: 2.5rem;">Welcome back, ${userName}</h1>
+                        <p class="header-subtitle">Your personal fashion command center</p>
+                    </div>
+                    <button class="btn btn-secondary" onclick="handleLogout()" style="padding: 0.5rem 1.5rem;">Logout</button>
+                </div>
+                
+                <div class="welcome-video-container" style="max-height: 400px; border-color: var(--color-cta);">
+                    <video autoplay loop playsinline muted class="welcome-video" style="object-fit: cover; width: 100%; height: 100%;">
                         <source src="assets/videos/Welcome 2.mp4" type="video/mp4">
                         Your browser does not support the video tag.
                     </video>
+                    <div style="position: absolute; bottom: 20px; left: 20px; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 8px; backdrop-filter: blur(5px); border-left: 3px solid var(--color-cta);">
+                        <p style="margin: 0; font-size: 0.9rem;">TRENDING NOW</p>
+                        <h3 style="margin: 0; color: #fff;">Summer Collection 2026</h3>
+                    </div>
                 </div>
             </div>
-            <div class="user-details" style="margin-top: 2rem; padding: 2rem; background: rgba(255,255,255,0.05); border-radius: 12px;">
-                <p><strong>Email:</strong> ${user.email}</p>
-                <button class="btn btn-secondary" style="margin-top: 1rem;" onclick="handleLogout()">Logout</button>
+
+            <div class="dashboard-grid">
+                <!-- 1. Activity & History -->
+                <div class="dashboard-card">
+                    <div class="dashboard-card-header">
+                        <span class="dashboard-card-title"><i class="fas fa-history"></i> Recent Activity</span>
+                        <a href="#" style="color: var(--color-text-body); font-size: 0.8rem;">View All</a>
+                    </div>
+                    <ul class="dashboard-list">
+                        <li class="dashboard-item">
+                            <img src="assets/footwear/luxury_leather_boots_1767784924591.png" onerror="this.src='https://via.placeholder.com/50'" class="item-image">
+                            <div class="item-details">
+                                <p class="item-name">Viewed: Aura Leather Boots</p>
+                                <p class="item-meta">2 hours ago</p>
+                            </div>
+                        </li>
+                        <li class="dashboard-item">
+                            <img src="assets/dresses/silk_evening_gown_red_1767785862153.png" onerror="this.src='https://via.placeholder.com/50'" class="item-image">
+                            <div class="item-details">
+                                <p class="item-name">Purchased: Scarlet Silk Gown</p>
+                                <p class="item-meta">Yesterday • £350</p>
+                            </div>
+                        </li>
+                         <li class="dashboard-item">
+                            <img src="assets/footwear/designer_heels_gold_1767784939295.png" onerror="this.src='https://via.placeholder.com/50'" class="item-image">
+                            <div class="item-details">
+                                <p class="item-name">Viewed: Solstice Gold Heels</p>
+                                <p class="item-meta">3 days ago</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 2. Orders & Tracking -->
+                <div class="dashboard-card">
+                    <div class="dashboard-card-header">
+                        <span class="dashboard-card-title"><i class="fas fa-box-open"></i> My Orders</span>
+                        <span style="background: var(--color-cta); color: #000; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold;">1 Active</span>
+                    </div>
+                    <ul class="dashboard-list">
+                        <li class="dashboard-item">
+                            <div class="item-details">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <p class="item-name">Order #CH-8821</p>
+                                    <span class="status-badge status-shipped">Shipped</span>
+                                </div>
+                                <p class="item-meta">Est. Delivery: Tomorrow, 2:00 PM</p>
+                                <div style="margin-top: 5px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
+                                    <div style="width: 75%; height: 100%; background: var(--color-cta);"></div>
+                                </div>
+                                <p class="item-meta" style="margin-top: 5px; font-size: 0.75rem;">Shipping to: 123 Fashion Ave, London</p>
+                            </div>
+                        </li>
+                        <li class="dashboard-item">
+                            <div class="item-details">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <p class="item-name">Order #CH-8100</p>
+                                    <span class="status-badge status-delivered">Delivered</span>
+                                </div>
+                                <p class="item-meta">Delivered on Jan 10, 2026</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 3. Seller Dashboard -->
+                <div class="dashboard-card">
+                    <div class="dashboard-card-header">
+                        <span class="dashboard-card-title"><i class="fas fa-chart-line"></i> Seller Central</span>
+                         <button class="btn btn-sm" style="padding: 2px 8px; font-size: 0.7rem;">+ List Item</button>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <div style="flex: 1; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; text-align: center;">
+                            <h4 style="font-size: 1.5rem; color: var(--color-cta);">£1,250</h4>
+                            <p style="font-size: 0.7rem; opacity: 0.7;">Total Sales</p>
+                        </div>
+                         <div style="flex: 1; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; text-align: center;">
+                            <h4 style="font-size: 1.5rem; color: #fff;">4</h4>
+                            <p style="font-size: 0.7rem; opacity: 0.7;">Active Listings</p>
+                        </div>
+                    </div>
+                    <ul class="dashboard-list">
+                         <li class="dashboard-item">
+                            <img src="https://images.unsplash.com/photo-1583743814966-8933f1b0ee2a?auto=format&fit=crop&q=80&w=100" class="item-image">
+                            <div class="item-details">
+                                <p class="item-name">Vintage Chanel Bag</p>
+                                <p class="item-meta">Listed: 5 days ago • £850</p>
+                            </div>
+                             <span class="status-badge status-processing">Active</span>
+                        </li>
+                        <li class="dashboard-item">
+                            <img src="https://images.unsplash.com/photo-1543076447-215ad9ba6923?auto=format&fit=crop&q=80&w=100" class="item-image">
+                            <div class="item-details">
+                                <p class="item-name">Denim Jacket</p>
+                                <p class="item-meta">Sold to: Sarah K.</p>
+                            </div>
+                             <span class="status-badge status-delivered">Sold</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 4. Profile Settings -->
+                <div class="dashboard-card full-width" style="grid-column: 1 / -1;">
+                    <div class="dashboard-card-header">
+                        <span class="dashboard-card-title"><i class="fas fa-user-cog"></i> Account Settings</span>
+                        <button class="btn btn-primary" style="padding: 5px 15px; font-size: 0.8rem;">Save Changes</button>
+                    </div>
+                    <form class="dashboard-form-grid">
+                        <div>
+                            <label class="dashboard-label">First Name</label>
+                            <input type="text" class="dashboard-input" value="${userName.split(' ')[0] || ''}">
+                        </div>
+                        <div>
+                            <label class="dashboard-label">Last Name</label>
+                            <input type="text" class="dashboard-input" value="${userName.split(' ')[1] || ''}">
+                        </div>
+                        
+                         <div>
+                            <label class="dashboard-label">Email Address</label>
+                            <input type="email" class="dashboard-input" value="${user.email}" disabled style="opacity: 0.5; cursor: not-allowed;">
+                        </div>
+                        <div>
+                            <label class="dashboard-label">Phone Number</label>
+                            <input type="tel" class="dashboard-input" placeholder="+44 7700 900000">
+                        </div>
+
+                        <div>
+                            <label class="dashboard-label">Date of Birth</label>
+                            <input type="date" class="dashboard-input">
+                        </div>
+                        <div>
+                            <label class="dashboard-label">Gender</label>
+                            <select class="dashboard-input">
+                                <option>Select Gender</option>
+                                <option>Female</option>
+                                <option>Male</option>
+                                <option>Non-binary</option>
+                                <option>Prefer not to say</option>
+                            </select>
+                        </div>
+
+                         <div class="full-width">
+                            <label class="dashboard-label">Shipping Address</label>
+                            <input type="text" class="dashboard-input" placeholder="House number, Street name">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px;">
+                                <input type="text" class="dashboard-input" placeholder="City">
+                                <input type="text" class="dashboard-input" placeholder="State/County">
+                                <input type="text" class="dashboard-input" placeholder="Postcode">
+                            </div>
+                        </div>
+
+                        <div class="full-width">
+                            <label class="dashboard-label">Payment Methods</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <div style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; border: 1px solid var(--color-cta);">
+                                    <i class="fab fa-cc-visa" style="font-size: 1.5rem;"></i>
+                                    <span>•••• 4242</span>
+                                </div>
+                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;">+ Add New Card</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         `;
     }
