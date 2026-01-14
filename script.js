@@ -1496,12 +1496,12 @@ async function openMyListings() {
     if (!myModal) {
         const modalHTML = `
             <div class="modal" id="my-listings-modal">
-                <div class="modal-content" style="max-width: 800px;">
-                    <div class="modal-header">
-                        <h2 class="modal-title">My Listings</h2>
-                        <button class="modal-close" id="close-my-listings">&times;</button>
+                <div class="modal-content" style="max-width: 900px; width: 90%; background: #1a1a1a; border: 1px solid #333;">
+                    <div class="modal-header" style="border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 20px;">
+                        <h2 class="modal-title" style="margin: 0;">My Listings</h2>
+                        <button class="modal-close" id="close-my-listings" style="font-size: 1.5rem;">&times;</button>
                     </div>
-                    <div id="my-listings-grid" class="product-grid" style="max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+                    <div id="my-listings-grid" class="product-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
                         <!-- Items injected here -->
                     </div>
                 </div>
@@ -1517,7 +1517,7 @@ async function openMyListings() {
 
     // Load items
     const grid = document.getElementById('my-listings-grid');
-    grid.innerHTML = '<p>Loading...</p>';
+    grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 20px;">Loading your items...</p>';
     myModal.classList.add('active');
 
     const { data: items, error } = await supabaseClient
@@ -1527,28 +1527,32 @@ async function openMyListings() {
         .order('created_at', { ascending: false });
 
     if (error) {
-        grid.innerHTML = '<p style="color:red">Error loading listings.</p>';
+        grid.innerHTML = '<p style="color:red; grid-column: 1/-1; text-align: center;">Error loading listings.</p>';
         return;
     }
 
     if (items.length === 0) {
-        grid.innerHTML = '<p>You haven\'t listed anything yet.</p>';
+        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 20px;">You haven\'t listed anything yet.</p>';
         return;
     }
 
     grid.innerHTML = items.map(item => `
-        <div class="product-card" style="border: 1px solid var(--color-border);">
-            <div class="product-image-container">
-                <img src="${item.image_url}" alt="${item.title}" class="product-image">
-                <span class="product-badge" style="background: #333; color: #fff;">${item.category}</span>
+        <div class="product-card" style="display: flex; flex-direction: column; background: #222; border: 1px solid #333; border-radius: 8px; overflow: hidden; transition: transform 0.2s;">
+            <div class="product-image-container" style="height: 200px; position: relative;">
+                <img src="${item.image_url}" alt="${item.title}" style="width: 100%; height: 100%; object-fit: cover;">
+                <span style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; text-transform: uppercase;">${item.category}</span>
             </div>
-            <div class="product-info">
-                <h3 class="product-name">${item.title}</h3>
-                <span class="product-price">${item.price}</span>
+            <div class="product-info" style="padding: 15px; flex: 1; display: flex; flex-direction: column;">
+                <h3 class="product-name" style="margin: 0 0 5px 0; font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.title}</h3>
+                <span class="product-price" style="font-size: 1.2rem; font-weight: bold; color: var(--color-cta);">${item.price}</span>
             </div>
-            <div class="product-actions" style="grid-template-columns: 1fr 1fr; gap: 10px;">
-                <button class="btn btn-secondary" onclick="window.handleEditPrice(${item.id}, '${item.price}')">Edit Price</button>
-                <button class="btn btn-primary" style="background: #ff4444; border-color: #ff4444;" onclick="window.handleDeleteItem(${item.id})">Delete</button>
+            <div class="product-actions" style="padding: 15px; padding-top: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button class="btn btn-secondary" style="width: 100%; padding: 8px;" onclick="window.handleEditPrice(${item.id}, '${item.price}')">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="btn btn-primary" style="width: 100%; padding: 8px; background: #dc3545; border-color: #dc3545;" onclick="window.handleDeleteItem(${item.id})">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
             </div>
         </div>
     `).join('');
