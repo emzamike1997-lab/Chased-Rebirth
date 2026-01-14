@@ -743,6 +743,21 @@ function initializeProfileForms() {
     const loginForm = document.getElementById('login-form-container');
     const signupForm = document.getElementById('signup-form-container');
 
+    // Password Toggle Logic
+    const togglePassword = document.getElementById('toggle-login-password');
+    if (togglePassword) {
+        togglePassword.addEventListener('click', function () {
+            const passwordInput = document.getElementById('login-password');
+            // Toggle the type attribute
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+
+            // Toggle the eye / eye slash icon
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+    }
+
     if (loginTab && signupTab && loginForm && signupForm) {
         // Tab switching
         loginTab.addEventListener('click', () => {

@@ -2163,6 +2163,26 @@ p {
         margin-top: var(--spacing-sm);
     }
 
+    /* Password Toggle */
+    .password-wrapper {
+        position: relative;
+    }
+
+    .password-toggle-icon {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--color-text-muted);
+        cursor: pointer;
+        z-index: 10;
+        transition: color var(--transition-fast);
+    }
+
+    .password-toggle-icon:hover {
+        color: var(--color-cta);
+    }
+
     .form-options {
         flex-direction: column;
         gap: var(--spacing-sm);
