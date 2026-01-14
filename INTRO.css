@@ -681,8 +681,8 @@ p {
 
 /* Wider profile container for Welcome Video screen */
 .profile-container.wide-profile {
-    max-width: 900px;
-    /* Match sketch width */
+    max-width: 1600px;
+    /* Increased to 1600px per user request */
 }
 
 .welcome-video-container {
