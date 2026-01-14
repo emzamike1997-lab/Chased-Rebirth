@@ -1352,23 +1352,48 @@ function updateUserUI(user) {
             </div>
             
             <script>
-                // Self-contained video logic for 2-time loop
+                // Robust video logic: 2-time loop + Autoplay Fix
                 (function() {
-                    setTimeout(() => {
+                    const checkVideo = setInterval(() => {
                         const video = document.getElementById('profile-welcome-video');
+                        
                         if (video) {
-                            video.loop = false; // Ensure native loop is off
-                            video.volume = 1.0; 
-                            let playCount = 1;
+                            clearInterval(checkVideo);
                             
+                            // Initialize logic variables
+                            let playCount = 1;
+                            video.loop = false; 
+                            video.volume = 1.0;
+                            // Attempt unmuted first
+                            video.muted = false; 
+
+                            // Robust Play Attempt
+                            const attemptPlay = async () => {
+                                try {
+                                    await video.play();
+                                } catch (err) {
+                                    console.log('Autoplay unmuted failed, falling back to muted:', err);
+                                    video.muted = true;
+                                    try {
+                                        await video.play();
+                                    } catch (err2) {
+                                        console.error('Autoplay muted also failed:', err2);
+                                    }
+                                }
+                            };
+                            
+                            // Loop Logic (Count = 2)
                             video.addEventListener('ended', () => {
                                 if (playCount < 2) {
                                     playCount++;
-                                    video.play();
+                                    video.play().catch(e => console.log('Loop play failed:', e));
                                 }
                             });
+
+                            // Start
+                            attemptPlay();
                         }
-                    }, 500); // Small delay to ensure DOM is ready
+                    }, 100);
                 })();
             </script>
             </div>
