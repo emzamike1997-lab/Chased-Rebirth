@@ -1382,12 +1382,12 @@ function updateUserUI(user) {
                                 }
                             };
                             
-                            // Loop Logic (Count = 2)
+                            // Infinite Loop Logic: Audio first, Muted forever after
                             video.addEventListener('ended', () => {
-                                if (playCount < 2) {
-                                    playCount++;
-                                    video.play().catch(e => console.log('Loop play failed:', e));
-                                }
+                                // Always play again
+                                // Mute for all subsequent loops
+                                video.muted = true;
+                                video.play().catch(e => console.log('Loop play failed:', e));
                             });
 
                             // Start
