@@ -40,6 +40,7 @@ async function restoreSession() {
         if (session && session.user) {
             console.log('CHASED: Session restored for', session.user.email);
             updateUserUI(session.user);
+            loadCartFromDB(); // Restore cart items
         } else {
             console.log('CHASED: No active session found.');
         }
@@ -312,6 +313,9 @@ function handleAddToCart(event) {
     // Update cart count
     updateCartCount();
 
+    // Persist to DB
+    addToCartDB(product);
+
     // Visual feedback
     const button = event.target.closest('button');
     const originalText = button.innerHTML;
@@ -412,8 +416,11 @@ function updateCartDisplay() {
     // Add cart items
     let total = 0;
     cart.forEach((item, index) => {
-        const price = parseFloat(item.price.replace('Â£', ''));
-        total += price;
+        // Robust parsing: remove everything except numbers and decimal point
+        const price = parseFloat(item.price.toString().replace(/[^0-9.]/g, ''));
+        if (!isNaN(price)) {
+            total += price; // Only add if valid number
+        }
 
         const itemHTML = `
             <div class="cart-item">
@@ -430,14 +437,110 @@ function updateCartDisplay() {
         container.insertAdjacentHTML('beforeend', itemHTML);
     });
 
-    totalElement.textContent = `Â£${total.toFixed(2)}`;
+    totalElement.textContent = `£${total.toFixed(2)}`;
 }
 
 function removeFromCart(index) {
+    const itemToRemove = cart[index];
+
+    // Remove from local array
     cart.splice(index, 1);
     cartCount--;
     updateCartCount();
     updateCartDisplay();
+
+    // Remove from DB if logged in
+    if (itemToRemove) {
+        deleteFromCartDB(itemToRemove.db_id || itemToRemove.id);
+    }
+}
+
+// ===================================
+// CART PERSISTENCE HELPERS
+// ===================================
+
+async function loadCartFromDB() {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) return;
+
+    try {
+        const { data: items, error } = await supabaseClient
+            .from('cart_items')
+            .select('*')
+            .order('created_at', { ascending: true });
+
+        if (error) throw error;
+
+        if (items && items.length > 0) {
+            // Map DB items to local cart structure
+            // We overwrite the local cart to avoid duplicates on reload
+            cart = items.map(item => ({
+                id: item.id,      // UUID from DB
+                name: item.product_name,
+                price: `£${item.price}`, // Format for display
+                image: item.image_url,
+                quantity: item.quantity,
+                db_id: item.id    // Explicit DB ID reference
+            }));
+
+            cartCount = cart.length;
+            updateCartCount();
+            updateCartDisplay();
+            console.log(`CHASED: Restored ${cart.length} items from cloud cart.`);
+        }
+    } catch (err) {
+        console.error('CHASED: Error loading cart:', err);
+    }
+}
+
+async function addToCartDB(product) {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) return; // Guest mode, do nothing
+
+    // Parse numeric price safely
+    const numericPrice = parseFloat(product.price.toString().replace(/[^0-9.]/g, ''));
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('cart_items')
+            .insert({
+                user_id: user.id,
+                product_name: product.name,
+                price: numericPrice,
+                image_url: product.image,
+                quantity: product.quantity,
+                // If it's a rebirth item, we might assume there's a rebirth ID but we don't have it easily available in the product object yet unless we added it.
+                // For now, generic storage is fine.
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        // Update local item with real DB ID
+        const localItem = cart.find(i => i.id === product.id);
+        if (localItem) {
+            localItem.id = data.id;
+            localItem.db_id = data.id;
+        }
+
+    } catch (err) {
+        console.error('CHASED: Failed to sync item to DB:', err);
+    }
+}
+
+async function deleteFromCartDB(itemId) {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) return;
+
+    try {
+        await supabaseClient
+            .from('cart_items')
+            .delete()
+            .eq('id', itemId); // itemId should be the UUID
+    } catch (err) {
+        console.error('CHASED: Failed to remove item from DB:', err);
+    }
 }
 
 
