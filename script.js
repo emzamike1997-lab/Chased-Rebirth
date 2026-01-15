@@ -1393,62 +1393,13 @@ function updateUserUI(user) {
                 </div>
                 
                 <div class="welcome-video-container" style="max-height: 400px; border-color: var(--color-cta);">
-                    <video autoplay playsinline class="welcome-video" id="profile-welcome-video" style="object-fit: cover; width: 100%; height: 100%;">
-                        <source src="assets/videos/Welcome 2.mp4" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
+                    <img src="assets/welcome_header.png" alt="Welcome to Chased" class="welcome-video" id="profile-welcome-video" style="object-fit: cover; width: 100%; height: 100%;">
                     <div style="position: absolute; bottom: 20px; left: 20px; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 8px; backdrop-filter: blur(5px); border-left: 3px solid var(--color-cta);">
                         <p style="margin: 0; font-size: 0.9rem;">TRENDING NOW</p>
                         <h3 style="margin: 0; color: #fff;">Summer Collection 2026</h3>
                     </div>
                 </div>
             </div>
-            
-            <script>
-                // Robust video logic: 2-time loop + Autoplay Fix
-                (function() {
-                    const checkVideo = setInterval(() => {
-                        const video = document.getElementById('profile-welcome-video');
-                        
-                        if (video) {
-                            clearInterval(checkVideo);
-                            
-                            // Initialize logic variables
-                            let playCount = 1;
-                            video.loop = false; 
-                            video.volume = 1.0;
-                            // Attempt unmuted first
-                            video.muted = false; 
-
-                            // Robust Play Attempt
-                            const attemptPlay = async () => {
-                                try {
-                                    await video.play();
-                                } catch (err) {
-                                    console.log('Autoplay unmuted failed, falling back to muted:', err);
-                                    video.muted = true;
-                                    try {
-                                        await video.play();
-                                    } catch (err2) {
-                                        console.error('Autoplay muted also failed:', err2);
-                                    }
-                                }
-                            };
-                            
-                            // Infinite Loop Logic: Audio first, Muted forever after
-                            video.addEventListener('ended', () => {
-                                // Always play again
-                                // Mute for all subsequent loops
-                                video.muted = true;
-                                video.play().catch(e => console.log('Loop play failed:', e));
-                            });
-
-                            // Start
-                            attemptPlay();
-                        }
-                    }, 100);
-                })();
-            </script>
             </div>
 
             <div class="dashboard-grid">
