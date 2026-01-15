@@ -105,28 +105,30 @@ function initializeHomeVideo() {
     const video = document.getElementById('home-hero-video');
     if (!video) return;
 
-    // Attempt to play
-    const playVideo = async () => {
-        try {
-            // User requested audible video.
-            // Note: Most browsers block unmuted autoplay without interaction.
-            video.muted = false;
-            await video.play();
-            console.log('CHASED: Home video playing (audio enabled)');
-        } catch (err) {
-            console.warn('CHASED: Home video unmuted autoplay failed. Browser policy likely requires interaction.', err);
-            // Fallback: Mute and play if unmuted fails (better than nothing)
-            try {
-                video.muted = true;
-                await video.play();
-                console.log('CHASED: Home video playing (muted fallback)');
-            } catch (err2) {
-                console.error('CHASED: Home video muted autoplay also failed', err2);
+    // Scroll Awareness: Pause when out of view, Play when in view
+    // Threshold 0.5 means 50% of the video must be visible
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Video is visible -> Attempt to play with audio
+                video.muted = false;
+                video.play().then(() => {
+                    console.log('CHASED: Video resumed (visible)');
+                }).catch(err => {
+                    // If unmuted fails, try muted (autoplay policy)
+                    console.warn('CHASED: Unmuted resume failed, trying muted', err);
+                    video.muted = true;
+                    video.play();
+                });
+            } else {
+                // Video is NOT visible -> Pause
+                video.pause();
+                console.log('CHASED: Video paused (scrolled away)');
             }
-        }
-    };
+        });
+    }, { threshold: 0.3 }); // 30% visibility trigger
 
-    playVideo();
+    observer.observe(video);
 }
 
 // ===================================
