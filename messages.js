@@ -1,9 +1,12 @@
 // ===================================
-// CHASED MESSAGING SYSTEM
+// CHASED MESSAGING SYSTEM (ENHANCED)
 // ===================================
 
 let currentSubscription = null;
 let activeConversationId = null;
+let activeReplyId = null; // Track message quoting
+let activeConversationRole = null; // 'buyer' or 'seller' relative to ME
+let activeParticipants = {}; // { id: name }
 
 // 1. Open Messages Dashboard (List of Conversations)
 async function openMessagesDashboard() {
@@ -26,6 +29,8 @@ async function openMessagesDashboard() {
     msgModal.classList.add('active');
 
     try {
+        // Fetch conversations and expand user details if possible (manually for now as names aren't foreign keyed easily without profile table or metadata)
+        // We stored seller_name on items, but for general chats we rely on metadata fetch.
         const { data: conversations, error } = await supabaseClient
             .from('conversations')
             .select('*')
@@ -43,7 +48,7 @@ async function openMessagesDashboard() {
 }
 
 // 2. Render Conversation List
-function renderConversationList(conversations, currentUserId) {
+async function renderConversationList(conversations, currentUserId) {
     const list = document.getElementById('conversation-list');
     list.innerHTML = '';
 
@@ -52,8 +57,10 @@ function renderConversationList(conversations, currentUserId) {
         return;
     }
 
+    // We can fetch names here or just use generic roles for list view. 
+    // To keep it fast, we use generic roles here, but names in Chat Window.
+
     conversations.forEach(conv => {
-        // Determine "Other Person" logic (basic)
         const isBuyer = conv.buyer_id === currentUserId;
         const role = isBuyer ? "Seller" : "Buyer";
 
@@ -95,9 +102,8 @@ async function startChat(sellerId, itemId, itemTitle) {
 
     if (existing) {
         openMessagesDashboard();
-        setTimeout(() => openChat(existing.id, itemTitle), 500); // Wait for modal
+        setTimeout(() => openChat(existing.id, itemTitle), 500);
     } else {
-        // Create new
         const { data: newConv, error: createError } = await supabaseClient
             .from('conversations')
             .insert({
@@ -123,15 +129,50 @@ async function startChat(sellerId, itemId, itemTitle) {
 // 4. Open Specific Chat Window
 async function openChat(conversationId, title) {
     activeConversationId = conversationId;
+    activeReplyId = null;
+    hideReplyUI();
 
     // Switch View
     document.getElementById('conversations-view').style.display = 'none';
     const chatView = document.getElementById('chat-view');
     chatView.style.display = 'flex';
 
-    document.getElementById('chat-title').textContent = title;
+    document.getElementById('chat-title').innerHTML = `
+        <div style="display:flex; flex-direction:column;">
+            <span>${title}</span>
+            <span id="chat-subtitle" style="font-size: 0.7rem; color: #888; font-weight: normal;">Loading details...</span>
+        </div>
+    `;
     const msgContainer = document.getElementById('chat-messages');
     msgContainer.innerHTML = '<p class="loading-text">Loading...</p>';
+
+    // Fetch conversation details to know roles
+    const { data: convData } = await supabaseClient
+        .from('conversations')
+        .select('*')
+        .eq('id', conversationId)
+        .single();
+
+    const { data: { user } } = await supabaseClient.auth.getUser();
+
+    // Resolve Participants
+    // Note: We don't have a users table public read policy for names usually, so this might fail if policies are strict. 
+    // We will assume we can't fetch names easily without a 'profiles' table or similar. 
+    // Fallback: "Buyer" / "Seller".
+
+    let otherRole = "";
+    if (user.id === convData.buyer_id) {
+        activeConversationRole = 'buyer'; // I am the buyer
+        otherRole = "Seller";
+        activeParticipants = { [convData.buyer_id]: "Me", [convData.seller_id]: "Seller" };
+    } else {
+        activeConversationRole = 'seller'; // I am the seller
+        otherRole = "Buyer";
+        activeParticipants = { [convData.seller_id]: "Me", [convData.buyer_id]: "Buyer" };
+    }
+
+    // Update Header
+    document.getElementById('chat-subtitle').textContent = `Chatting with ${otherRole}`;
 
     // Load History
     const { data: messages, error } = await supabaseClient
@@ -145,27 +186,83 @@ async function openChat(conversationId, title) {
         return;
     }
 
-    renderMessages(messages);
+    renderMessages(messages, user.id, convData.buyer_id, convData.seller_id);
 
-    // Subscribe to new messages
-    subscribeToMessages(conversationId);
+    // Subscribe
+    subscribeToMessages(conversationId, user.id, convData.buyer_id, convData.seller_id);
 
-    // Scroll to bottom
+    // Mark messages as read (simple approach: mark all unseen from other as read)
+    markAsRead(conversationId, user.id);
+
     scrollToBottom();
 }
 
+async function markAsRead(conversationId, currentUserId) {
+    await supabaseClient
+        .from('messages')
+        .update({ is_read: true })
+        .eq('conversation_id', conversationId)
+        .neq('sender_id', currentUserId) // Only mark others' messages
+        .eq('is_read', false);
+}
+
 // 5. Render Messages
-async function renderMessages(messages) {
+function renderMessages(messages, currentUserId, buyerId, sellerId) {
     const container = document.getElementById('chat-messages');
     container.innerHTML = '';
-    const { data: { user } } = await supabaseClient.auth.getUser();
 
     messages.forEach(msg => {
-        const isMe = msg.sender_id === user.id;
+        // Determine alignment
+        const isMe = msg.sender_id === currentUserId;
+
+        // Determine styling role (Sender's role)
+        const isSenderBuyer = msg.sender_id === buyerId;
+
+        // Quote lookup
+        let quoteHTML = '';
+        if (msg.reply_to_id) {
+            const quotedMsg = messages.find(m => m.id === msg.reply_to_id);
+            if (quotedMsg) {
+                quoteHTML = `<div class="message-quote">${quotedMsg.content}</div>`;
+            } else {
+                quoteHTML = `<div class="message-quote">Message deleted</div>`;
+            }
+        }
+
+        // Read Status for MY messages
+        let statusIcon = '';
+        if (isMe) {
+            // Check if it's read (Need real-time update for this to be live, but for history it works)
+            if (msg.is_read) {
+                statusIcon = '<i class="fas fa-box-open" title="Read"></i>'; // Open Bag
+            } else {
+                statusIcon = '<i class="fas fa-shopping-bag" title="Delivered"></i>'; // Closed Bag
+            }
+        }
+
+        const alignClass = isMe ? 'message-align-right' : 'message-align-left';
+
+        // Style: Buyer = Grey, Seller = Black
+        // Note: We need contrast for text.
+        // Buyer (Grey) -> Black Text
+        // Seller (Black) -> White Text
+        const styleClass = isSenderBuyer ? 'message-style-buyer' : 'message-style-seller';
+
+        // Name Logic
+        const senderRoleName = isSenderBuyer ? "Buyer" : "Seller";
+        const nameDisplay = isMe ? "Me" : senderRoleName;
+
         const msgHTML = `
-            <div class="message ${isMe ? 'message-sent' : 'message-received'}">
-                <div class="message-content">${msg.content}</div>
-                <div class="message-time">${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+            <div class="message-wrapper ${alignClass}">
+                <div class="message-sender-name">${nameDisplay}</div>
+                <div class="message ${styleClass}" onclick="triggerReply('${msg.id}', '${escapeHtml(msg.content)}')">
+                    ${quoteHTML}
+                    <div class="message-content">${msg.content}</div>
+                    <div class="message-meta">
+                        <span class="message-time">${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        <span class="message-status">${statusIcon}</span>
+                    </div>
+                </div>
             </div>
         `;
         container.insertAdjacentHTML('beforeend', msgHTML);
@@ -180,22 +277,24 @@ async function sendMessage() {
 
     const { data: { user } } = await supabaseClient.auth.getUser();
 
-    // Clear input immediately (optimistic UI)
     input.value = '';
+    const replyId = activeReplyId;
+    activeReplyId = null;
+    hideReplyUI();
 
     const { error } = await supabaseClient
         .from('messages')
         .insert({
             conversation_id: activeConversationId,
             sender_id: user.id,
-            content: content
+            content: content,
+            reply_to_id: replyId
         });
 
     if (error) {
         alert("Failed to send.");
-        input.value = content; // Restore on fail
+        input.value = content;
     } else {
-        // Update conversation timestamp
         await supabaseClient
             .from('conversations')
             .update({ updated_at: new Date() })
@@ -204,39 +303,67 @@ async function sendMessage() {
 }
 
 // Subscription
-function subscribeToMessages(conversationId) {
+function subscribeToMessages(conversationId, currentUserId, buyerId, sellerId) {
     if (currentSubscription) supabaseClient.removeChannel(currentSubscription);
 
     currentSubscription = supabaseClient
         .channel(`chat:${conversationId}`)
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` },
-            payload => {
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` },
+            async (payload) => {
                 const container = document.getElementById('chat-messages');
-                const { new: msg } = payload;
 
-                // Re-fetch user safely or just check basic logic?
-                // For speed, just append. We assume if it came from realtime and we didn't just type it (which optimistic UPDATE would handle, but we didn't do optimistic append yet), we show it.
-                // Actually, best to just call renderMessages with single item or append manually.
+                if (payload.eventType === 'INSERT') {
+                    const msg = payload.new;
 
-                // Simple append
-                supabaseClient.auth.getUser().then(({ data: { user } }) => {
-                    const isMe = msg.sender_id === user.id;
-                    if (isMe) {
-                        // If we already appended optimistically, we might duplicate.
-                        // But we didn't append optimistically above, we just cleared input. So we need this.
+                    // Refresh full list to handle quotes/ordering safely easily? 
+                    // Or append. Let's append but we need logic for quotes.
+                    // Re-fetching is safer for quotes and simpler.
+                    // For now, let's just trigger a full re-render or efficient append requires fetching quote.
+
+                    // Optimize: Just re-fetch all for this specific chat view to ensure consistency
+                    const { data: messages } = await supabaseClient
+                        .from('messages')
+                        .select('*')
+                        .eq('conversation_id', conversationId)
+                        .order('created_at', { ascending: true });
+
+                    if (messages) renderMessages(messages, currentUserId, buyerId, sellerId);
+                    scrollToBottom();
+
+                    // If message is from other, mark read
+                    if (msg.sender_id !== currentUserId) {
+                        markAsRead(conversationId, currentUserId);
                     }
 
-                    const msgHTML = `
-                    <div class="message ${isMe ? 'message-sent' : 'message-received'}">
-                        <div class="message-content">${msg.content}</div>
-                        <div class="message-time">${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                    </div>
-                `;
-                    container.insertAdjacentHTML('beforeend', msgHTML);
-                    scrollToBottom();
-                });
+                } else if (payload.eventType === 'UPDATE') {
+                    // Handle Read Status changes
+                    const { data: messages } = await supabaseClient
+                        .from('messages')
+                        .select('*')
+                        .eq('conversation_id', conversationId)
+                        .order('created_at', { ascending: true });
+                    if (messages) renderMessages(messages, currentUserId, buyerId, sellerId);
+                }
             })
         .subscribe();
+}
+
+function triggerReply(msgId, content) {
+    activeReplyId = msgId;
+    const replyBar = document.getElementById('reply-bar');
+    const replyText = document.getElementById('reply-text');
+    replyBar.style.display = 'flex';
+    replyText.textContent = `Replying to: "${content.substring(0, 30)}${content.length > 30 ? '...' : ''}"`;
+    document.getElementById('chat-input').focus();
+}
+
+function hideReplyUI() {
+    activeReplyId = null;
+    document.getElementById('reply-bar').style.display = 'none';
+}
+
+function escapeHtml(text) {
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
 function scrollToBottom() {
@@ -249,14 +376,14 @@ function backToConversations() {
     document.getElementById('conversations-view').style.display = 'block';
     activeConversationId = null;
     if (currentSubscription) supabaseClient.removeChannel(currentSubscription);
-    openMessagesDashboard(); // Refresh list
+    openMessagesDashboard();
 }
 
 // UI Builder
 function createMessagesModal() {
     const html = `
     <div class="modal" id="messages-modal">
-        <div class="modal-content" style="max-height: 80vh; display: flex; flex-direction: column;">
+        <div class="modal-content" style="max-height: 80vh; display: flex; flex-direction: column; background: #111; color: white;">
             
             <!-- VIEW 1: CONVERSATION LIST -->
             <div id="conversations-view" style="display:block; height: 100%;">
@@ -271,17 +398,26 @@ function createMessagesModal() {
 
             <!-- VIEW 2: CHAT WINDOW -->
             <div id="chat-view" style="display:none; flex-direction: column; height: 100%;">
-                <div class="modal-header" style="border-bottom: 1px solid #333; padding-bottom: 10px;">
-                    <button class="btn-icon" onclick="backToConversations()"><i class="fas fa-arrow-left"></i></button>
-                    <h3 id="chat-title" style="margin-left: 10px; font-size: 1.1rem;">Chat</h3>
+                <div class="modal-header" style="border-bottom: 1px solid #333; padding-bottom: 10px; background: #000;">
+                    <div style="display:flex; align-items:center;">
+                        <button class="btn-icon" onclick="backToConversations()" style="color:white; margin-right:15px;"><i class="fas fa-arrow-left"></i></button>
+                        <div class="conv-avatar" style="width:30px; height:30px; margin-right:10px;"><i class="fas fa-user"></i></div>
+                        <h3 id="chat-title" style="margin: 0; font-size: 1rem;">Chat</h3>
+                    </div>
                     <button class="modal-close" onclick="document.getElementById('messages-modal').classList.remove('active')">&times;</button>
                 </div>
                 
-                <div id="chat-messages" class="chat-messages" style="flex: 1; overflow-y: auto; padding: 15px; background: rgba(0,0,0,0.2);">
+                <div id="chat-messages" class="chat-messages" style="flex: 1; overflow-y: auto; padding: 15px; background: #1a1a1a;">
                     <!-- Bubble -->
                 </div>
 
-                <div class="chat-input-area" style="padding: 15px; border-top: 1px solid #333; display: flex; gap: 10px;">
+                <!-- Reply Bar -->
+                <div id="reply-bar" style="display:none; background: #222; padding: 5px 15px; border-left: 3px solid var(--color-cta); justify-content: space-between; align-items: center;">
+                    <span id="reply-text" style="font-size: 0.8rem; color: #aaa;">Replying...</span>
+                    <button onclick="hideReplyUI()" style="background:none; border:none; color:white;"><i class="fas fa-times"></i></button>
+                </div>
+
+                <div class="chat-input-area" style="padding: 15px; border-top: 1px solid #333; display: flex; gap: 10px; background: #000;">
                     <input type="text" id="chat-input" placeholder="Type a message..." style="flex:1; padding: 10px; border-radius: 20px; border: 1px solid #444; background: #222; color: white;">
                     <button class="btn btn-primary" onclick="sendMessage()" style="border-radius: 50%; width: 40px; height: 40px; padding: 0; display:flex; align-items:center; justify-content:center;"><i class="fas fa-paper-plane"></i></button>
                 </div>
@@ -299,16 +435,30 @@ function createMessagesModal() {
         .conv-details p { margin: 0; font-size: 0.8rem; color: #888; }
         .conv-arrow { margin-left: auto; color: #555; }
 
-        .message { margin-bottom: 10px; max-width: 80%; padding: 10px 15px; border-radius: 15px; font-size: 0.9rem; }
-        .message-sent { background: var(--color-cta, #D4AF37); color: black; margin-left: auto; border-bottom-right-radius: 2px; }
-        .message-received { background: #333; color: white; margin-right: auto; border-bottom-left-radius: 2px; }
-        .message-time { font-size: 0.7rem; opacity: 0.7; margin-top: 5px; text-align: right; }
+        .message-wrapper { margin-bottom: 15px; display: flex; flex-direction: column; max-width: 80%; }
+        .message-align-right { align-self: flex-end; align-items: flex-end; }
+        .message-align-left { align-self: flex-start; align-items: flex-start; }
+
+        .message { padding: 10px 15px; border-radius: 15px; font-size: 0.9rem; position: relative; cursor: pointer; transition: transform 0.1s; }
+        .message:active { transform: scale(0.98); }
+        
+        .message-style-buyer { background: #444; color: white; border: 1px solid #555; } /* Grey for Buyer */
+        .message-style-seller { background: #000; color: white; border: 1px solid #333; } /* Black for Seller */
+
+        /* Improve styling for Me (Black/Right) vs Them (Grey/Left) if we ignore roles? No, stick to request. */
+        
+        .message-sender-name { font-size: 0.7rem; color: #888; margin-bottom: 3px; margin-left: 5px; margin-right: 5px; }
+
+        .message-meta { display: flex; justify-content: flex-end; align-items: center; margin-top: 5px; opacity: 0.7; gap: 5px; }
+        .message-time { font-size: 0.6rem; }
+        .message-status { font-size: 0.7rem; display: flex; align-items: center; } /* Bag icon */
+
+        .message-quote { background: rgba(255,255,255,0.1); border-left: 2px solid var(--color-cta); padding: 5px; margin-bottom: 5px; font-size: 0.8rem; border-radius: 4px; opacity: 0.8; }
     </style>
     `;
 
     document.body.insertAdjacentHTML('beforeend', html);
 
-    // Enter key to send
     document.addEventListener('keydown', (e) => {
         if (e.target.id === 'chat-input' && e.key === 'Enter') {
             sendMessage();

@@ -19,6 +19,7 @@ create table if not exists messages (
   conversation_id uuid references conversations(id) on delete cascade not null,
   sender_id uuid references auth.users not null,
   content text not null,
+  reply_to_id uuid references messages(id), -- Self-reference for quotes
   is_read boolean default false,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
