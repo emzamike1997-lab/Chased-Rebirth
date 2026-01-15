@@ -64,7 +64,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initializeProductCategories();
     initializeHeaderInteractions();
+
     initializeMobileCart();
+    initializeHomeVideo();
 
     // Check for existing session (Remember Me)
     restoreSession();
@@ -91,6 +93,28 @@ function initializeMobileCart() {
             showCartModal();
         });
     }
+}
+
+// ===================================
+// HOME VIDEO LOGIC
+// ===================================
+function initializeHomeVideo() {
+    const video = document.getElementById('home-hero-video');
+    if (!video) return;
+
+    // Attempt to play
+    const playVideo = async () => {
+        try {
+            // Ensure muted is set for autoplay policy
+            video.muted = true;
+            await video.play();
+            console.log('CHASED: Home video playing');
+        } catch (err) {
+            console.warn('CHASED: Home video autoplay failed', err);
+        }
+    };
+
+    playVideo();
 }
 
 // ===================================
