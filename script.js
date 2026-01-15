@@ -149,10 +149,22 @@ function initializeHomeVideo() {
                     }).catch(error => {
                         console.warn('CHASED: Unmuted autoplay blocked by browser. Fallback necessary.', error);
                         // We MUST fallback to muted, otherwise the video won't play at all.
-                        // But we'll leave the button accessible so they can unmute manually.
                         video.muted = true;
                         updateIcon();
                         video.play();
+
+                        // Add one-time listener to unmute on ANY user interaction (global unlock)
+                        const unlockAudio = () => {
+                            video.muted = false;
+                            updateIcon();
+                            video.play().catch(e => console.log('Audio unlock failed', e));
+                            console.log('CHASED: Audio unlocked via user interaction.');
+                        };
+
+                        // Listen for any interaction to unlock audio ASAP
+                        ['click', 'touchstart', 'scroll', 'keydown'].forEach(evt =>
+                            document.addEventListener(evt, unlockAudio, { capture: true, once: true })
+                        );
                     });
                 }
             } else {
