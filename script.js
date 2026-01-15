@@ -101,32 +101,65 @@ function initializeMobileCart() {
 // ===================================
 // HOME VIDEO LOGIC
 // ===================================
+// ===================================
+// HOME VIDEO LOGIC
+// ===================================
 function initializeHomeVideo() {
     const video = document.getElementById('home-hero-video');
+    const muteBtn = document.getElementById('video-mute-toggle');
     if (!video) return;
 
-    // Scroll Awareness: Pause when out of view, Play when in view
-    // Threshold 0.5 means 50% of the video must be visible
+    // Helper to update icon
+    const updateIcon = () => {
+        if (!muteBtn) return;
+        const icon = muteBtn.querySelector('i');
+        if (video.muted) {
+            icon.className = 'fas fa-volume-mute';
+            muteBtn.style.background = 'rgba(0,0,0,0.5)';
+        } else {
+            icon.className = 'fas fa-volume-up';
+            muteBtn.style.background = 'rgba(255, 255, 255, 0.2)';
+        }
+    };
+
+    // Toggle Mute on Click
+    if (muteBtn) {
+        muteBtn.addEventListener('click', () => {
+            video.muted = !video.muted;
+            updateIcon();
+        });
+    }
+
+    // Ensure initial state is UNMUTED as requested
+    video.muted = false;
+    updateIcon();
+
+    // Scroll Awareness
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                // Video is visible -> Attempt to play with audio
+                // Try to play unmuted
                 video.muted = false;
-                video.play().then(() => {
-                    console.log('CHASED: Video resumed (visible)');
-                }).catch(err => {
-                    // If unmuted fails, try muted (autoplay policy)
-                    console.warn('CHASED: Unmuted resume failed, trying muted', err);
-                    video.muted = true;
-                    video.play();
-                });
+                updateIcon();
+
+                const playPromise = video.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        console.log('CHASED: Video playing unmuted (success).');
+                    }).catch(error => {
+                        console.warn('CHASED: Unmuted autoplay blocked by browser. Fallback necessary.', error);
+                        // We MUST fallback to muted, otherwise the video won't play at all.
+                        // But we'll leave the button accessible so they can unmute manually.
+                        video.muted = true;
+                        updateIcon();
+                        video.play();
+                    });
+                }
             } else {
-                // Video is NOT visible -> Pause
                 video.pause();
-                console.log('CHASED: Video paused (scrolled away)');
             }
         });
-    }, { threshold: 0.3 }); // 30% visibility trigger
+    }, { threshold: 0.3 });
 
     observer.observe(video);
 }
