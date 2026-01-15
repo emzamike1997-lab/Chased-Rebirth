@@ -1700,21 +1700,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ===================================
 // PRODUCT CATEGORIES (Dresses, Footwear, Tops, Pants)
 // ===================================
-function initializeProductCategories() {
-    const categoryTabs = document.querySelectorAll('.category-tab');
-    const placeholder = document.getElementById('category-placeholder');
 
-    categoryTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-
-            const selectedCategory = document.getElementById(`${categoryName}-category`);
-            if (selectedCategory) {
-                selectedCategory.style.display = 'block';
-                selectedCategory.classList.add('active');
-            }
-        });
-    });
-}
 
 // ===================================
 // MY LISTINGS (Edit/Delete)
@@ -1914,56 +1900,7 @@ function enterShop() {
 // ===================================
 // SECTION NAVIGATION
 // ===================================
-function navigateToSection(sectionId) {
-    // Hide all sections
-    const sections = document.querySelectorAll('.content-section');
-    sections.forEach(sec => {
-        sec.style.display = 'none';
-        sec.classList.remove('active');
-    });
 
-    // Show target section
-    const targetSection = document.getElementById(`${sectionId}-section`);
-    if (targetSection) {
-        targetSection.style.display = 'block';
-        setTimeout(() => targetSection.classList.add('active'), 10);
-    }
-
-    // Update active nav link
-    const navLinks = document.querySelectorAll('.nav-link, .mobile-nav-link');
-    navLinks.forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('data-section') === sectionId) {
-            link.classList.add('active');
-        }
-    });
-
-    // Special handling for 'buy' section reset
-    if (sectionId === 'buy') {
-        // Show Main Shop Elements
-        if (categories) categories.style.display = 'flex';
-        if (promo) promo.style.display = 'block';
-        if (placeholder) placeholder.style.display = 'block';
-
-        // Hide Rebirth Marketplace
-        if (rebirthMarket) rebirthMarket.style.display = 'none';
-
-        // Reset Tabs
-        const tabs = document.querySelectorAll('.category-tab');
-        tabs.forEach(t => t.classList.remove('active'));
-
-        // Hide standard category content
-        const cats = document.querySelectorAll('.category-content');
-        cats.forEach(c => c.style.display = 'none');
-    }
-
-    // Close mobile menu
-    const navLinksContainer = document.querySelector('.nav-links');
-    if (navLinksContainer) navLinksContainer.classList.remove('active');
-
-    // Scroll to top
-    window.scrollTo(0, 0);
-}
 
 // --- Recent Activity Tracking ---
 
