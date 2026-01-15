@@ -98,6 +98,9 @@ function initializeMobileCart() {
 // ===================================
 // HOME VIDEO LOGIC
 // ===================================
+// ===================================
+// HOME VIDEO LOGIC
+// ===================================
 function initializeHomeVideo() {
     const video = document.getElementById('home-hero-video');
     if (!video) return;
@@ -105,12 +108,21 @@ function initializeHomeVideo() {
     // Attempt to play
     const playVideo = async () => {
         try {
-            // Ensure muted is set for autoplay policy
-            video.muted = true;
+            // User requested audible video.
+            // Note: Most browsers block unmuted autoplay without interaction.
+            video.muted = false;
             await video.play();
-            console.log('CHASED: Home video playing');
+            console.log('CHASED: Home video playing (audio enabled)');
         } catch (err) {
-            console.warn('CHASED: Home video autoplay failed', err);
+            console.warn('CHASED: Home video unmuted autoplay failed. Browser policy likely requires interaction.', err);
+            // Fallback: Mute and play if unmuted fails (better than nothing)
+            try {
+                video.muted = true;
+                await video.play();
+                console.log('CHASED: Home video playing (muted fallback)');
+            } catch (err2) {
+                console.error('CHASED: Home video muted autoplay also failed', err2);
+            }
         }
     };
 
