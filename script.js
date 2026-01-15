@@ -1407,29 +1407,12 @@ function updateUserUI(user) {
                 <div class="dashboard-card">
                     <div class="dashboard-card-header">
                         <span class="dashboard-card-title"><i class="fas fa-history"></i> Recent Activity</span>
-                        <a href="#" style="color: var(--color-text-body); font-size: 0.8rem;">View All</a>
+                        <a href="#" onclick="clearActivity(event)" style="color: var(--color-text-body); font-size: 0.8rem;">Clear History</a>
                     </div>
-                    <ul class="dashboard-list">
-                        <li class="dashboard-item">
-                            <img src="assets/footwear/luxury_leather_boots_1767784924591.png" onerror="this.src='https://via.placeholder.com/50'" class="item-image">
-                            <div class="item-details">
-                                <p class="item-name">Viewed: Aura Leather Boots</p>
-                                <p class="item-meta">2 hours ago</p>
-                            </div>
-                        </li>
-                        <li class="dashboard-item">
-                            <img src="assets/dresses/silk_evening_gown_red_1767785862153.png" onerror="this.src='https://via.placeholder.com/50'" class="item-image">
-                            <div class="item-details">
-                                <p class="item-name">Purchased: Scarlet Silk Gown</p>
-                                <p class="item-meta">Yesterday â€¢ Â£350</p>
-                            </div>
-                        </li>
-                         <li class="dashboard-item">
-                            <img src="assets/footwear/designer_heels_gold_1767784939295.png" onerror="this.src='https://via.placeholder.com/50'" class="item-image">
-                            <div class="item-details">
-                                <p class="item-name">Viewed: Solstice Gold Heels</p>
-                                <p class="item-meta">3 days ago</p>
-                            </div>
+                    <ul class="dashboard-list" id="recent-activity-list">
+                        <!-- Dynamic Content -->
+                        <li class="dashboard-item" style="justify-content: center; opacity: 0.6;">
+                            <p>No recent activity tracked.</p>
                         </li>
                     </ul>
                 </div>
@@ -1469,10 +1452,10 @@ function updateUserUI(user) {
                 <!-- 3. Seller Dashboard -->
                 <div class="dashboard-card">
                     <div class="dashboard-card-header">
-                        <span class="dashboard-card-title"><i class="fas fa-chart-line"></i> Seller Central</span>
-                         <button class="btn btn-sm" style="padding: 2px 8px; font-size: 0.7rem;">+ List Item</button>
+                        <span class="dashboard-card-title"><i class="fas fa-chart-line"></i> Rebirth Sales</span>
+                        <button class="btn btn-sm" onclick="showSellModal()" style="padding: 0.2rem 0.8rem; font-size: 0.8rem;">+ List Item</button>
                     </div>
-                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                         <div style="flex: 1; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; text-align: center;">
                             <h4 style="font-size: 1.5rem; color: var(--color-cta);">Â£1,250</h4>
                             <p style="font-size: 0.7rem; opacity: 0.7;">Total Sales</p>
@@ -1688,9 +1671,14 @@ async function handleDeleteItem(id) {
     if (error) {
         alert("Error deleting: " + error.message);
     } else {
-        alert("Item deleted.");
-        openMyListings(); // Refresh list
-        loadRebirthItems(); // Refresh main feed in background
+        if (error) throw error;
+
+        // Track Activity locally
+        trackActivity('Sold', itemName, 'assets/dashboard/welcome_header.png', `£${price}`); // Using placeholder image for now
+
+        alert('Item listed successfully!');
+        e.target.reset();
+        loadRebirthItems(); // Refresh the gridn feed in background
     }
 }
 
@@ -1839,4 +1827,75 @@ function navigateToSection(sectionId) {
 
     // Scroll to top
     window.scrollTo(0, 0);
+}
+
+// --- Recent Activity Tracking ---
+
+function trackActivity(type, itemName, itemImage, itemPrice) {
+    const activity = {
+        type: type,
+        name: itemName,
+        image: itemImage,
+        price: itemPrice,
+        timestamp: Date.now()
+    };
+
+    let history = JSON.parse(localStorage.getItem('user_activity') || '[]');
+    history.unshift(activity); // Add to beginning
+
+    // Limit to last 20 items
+    if (history.length > 20) history.pop();
+
+    localStorage.setItem('user_activity', JSON.stringify(history));
+
+    // If dashboard is currently visible, re-render
+    const list = document.getElementById('recent-activity-list');
+    if (list) renderRecentActivity();
+}
+
+function renderRecentActivity() {
+    const list = document.getElementById('recent-activity-list');
+    if (!list) return;
+
+    const history = JSON.parse(localStorage.getItem('user_activity') || '[]');
+
+    if (history.length === 0) {
+        list.innerHTML = `
+            <li class="dashboard-item" style="justify-content: center; opacity: 0.6;">
+                <p>No recent activity tracked.</p>
+            </li>
+        `;
+        return;
+    }
+
+    list.innerHTML = history.map(item => {
+        const timeString = new Date(item.timestamp).toLocaleDateString() === new Date().toLocaleDateString()
+            ? 'Today'
+            : new Date(item.timestamp).toLocaleDateString();
+
+        let iconClass = 'fa-eye';
+        if (item.type === 'Purchased') iconClass = 'fa-shopping-bag';
+        if (item.type === 'Sold') iconClass = 'fa-tag';
+
+        // Use a fallback image if none provided or error
+        const img = item.image || 'https://via.placeholder.com/50';
+
+        return `
+            <li class="dashboard-item">
+                <img src="${img}" onerror="this.src='https://via.placeholder.com/50'" class="item-image" style="object-fit:cover;">
+                <div class="item-details">
+                    <p class="item-name"><i class="fas ${iconClass}" style="margin-right:5px; opacity:0.7;"></i> ${item.type}: ${item.name}</p>
+                    <p class="item-meta">${timeString} • ${item.price || ''}</p>
+                </div>
+            </li>
+        `;
+    }).join('');
+}
+
+function clearActivity(e) {
+    if (e) e.preventDefault();
+    if (confirm('Are you sure you want to clear your activity history?')) {
+        localStorage.removeItem('user_activity');
+        renderRecentActivity();
+    }
 }
