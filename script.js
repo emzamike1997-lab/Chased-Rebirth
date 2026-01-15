@@ -550,9 +550,8 @@ async function handlePostItem(e) {
         loadRebirthItems();
 
         // Switch to tab
-        navigateToSection('buy');
-        const rebirthTab = document.getElementById('rebirth-tab');
-        if (rebirthTab) rebirthTab.click();
+        // Switch to rebirth section
+        navigateToSection('rebirth');
 
     } catch (error) {
         console.error('Error posting item:', error);
@@ -567,39 +566,7 @@ async function handlePostItem(e) {
 // REBIRTH MARKETPLACE LOGIC
 // ===================================
 
-function openRebirthMarketplace() {
-    // Hide Standard Buy Elements
-    document.querySelector('.product-categories').style.display = 'none';
-    const promo = document.getElementById('rebirth-promo');
-    if (promo) promo.style.display = 'none';
-
-    // Hide standard category content if active
-    const standardCats = document.querySelectorAll('.category-content');
-    standardCats.forEach(c => c.style.display = 'none');
-
-    // Hide placeholder
-    const placeholder = document.getElementById('category-placeholder');
-    if (placeholder) placeholder.style.display = 'none';
-
-    // Show Rebirth Marketplace
-    const rebirthMarket = document.getElementById('rebirth-marketplace');
-    if (rebirthMarket) {
-        rebirthMarket.style.display = 'block';
-        loadRebirthItems(); // Reload/Sorter items
-    }
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function closeRebirthMarketplace() {
-    // Reset to full Buy Section state
-    // Reset to full Buy Section state
-    navigateToSection('buy');
-}
-
-// Expose navigation
-window.openRebirthMarketplace = openRebirthMarketplace;
-window.closeRebirthMarketplace = closeRebirthMarketplace;
+// Rebirth Logic moved to top-level section handling
 
 async function loadRebirthItems() {
     // Clear all grids first
@@ -935,6 +902,11 @@ function navigateToSection(sectionName) {
         });
 
         if (placeholder) placeholder.style.display = 'block';
+    }
+
+    // Load Rebirth items if navigating to Rebirth section
+    if (sectionName === 'rebirth') {
+        loadRebirthItems();
     }
 
     // Scroll to top
