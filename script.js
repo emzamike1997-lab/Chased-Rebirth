@@ -663,6 +663,7 @@ async function loadRebirthItems() {
         const { data: items, error } = await supabaseClient
             .from('rebirth_items')
             .select('*')
+            .eq('status', 'active')
             .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -1655,10 +1656,10 @@ async function handlePaymentProcess(e) {
 
             // If it's a specific Rebirth item, mark as SOLD
             if (item.rebirthId) {
-                await supabaseClient
-                    .from('rebirth_items')
-                    .update({ status: 'sold' })
-                    .eq('id', item.rebirthId);
+                const { error: rpcError } = await supabaseClient
+                    .rpc('mark_item_sold', { item_id: item.rebirthId });
+
+                if (rpcError) console.error("Error marking item sold:", rpcError);
             }
 
             // Track "Purchased" activity (real)
@@ -1672,6 +1673,9 @@ async function handlePaymentProcess(e) {
         document.getElementById('cart-items-container').innerHTML = '<p class="cart-empty" style="text-align: center; color: #666; padding: 20px;">Your cart is empty.</p>';
         document.getElementById('cart-total-amount').textContent = '£0';
         document.getElementById('checkout-modal').classList.remove('active');
+
+        // Refresh Feed to remove sold items
+        if (window.loadRebirthItems) window.loadRebirthItems();
 
     } catch (err) {
         console.error('Payment Error:', err);
