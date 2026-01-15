@@ -721,15 +721,9 @@ function openImageViewer(imageElement) {
                             </button>
                         </div>
                         
-                        <div class="rotation-controls">
-                            <button class="control-btn" id="rotate-left" title="Rotate Left">
-                                <i class="fas fa-undo"></i>
-                            </button>
-                            <button class="control-btn" id="rotate-360" title="360Â° View">
-                                <i class="fas fa-sync"></i> 360Â°
-                            </button>
-                            <button class="control-btn" id="rotate-right" title="Rotate Right">
-                                <i class="fas fa-redo"></i>
+                        <div class="wishlist-controls">
+                            <button class="control-btn" id="wishlist-btn" title="Add to Wishlist">
+                                <i class="far fa-heart"></i>
                             </button>
                         </div>
                     </div>
@@ -791,26 +785,15 @@ function setupImageViewerControls() {
 
     document.getElementById('zoom-reset').addEventListener('click', () => {
         currentZoom = 1;
-        currentRotation = 0;
         updateImageTransform();
     });
 
-    // Rotation controls
-    document.getElementById('rotate-left').addEventListener('click', () => {
-        currentRotation -= 90;
-        updateImageTransform();
+    // Wishlist Toggle
+    document.getElementById('wishlist-btn').addEventListener('click', () => {
+        const productName = document.getElementById('viewer-product-name').textContent;
+        toggleWishlist(productName);
     });
-
-    document.getElementById('rotate-right').addEventListener('click', () => {
-        currentRotation += 90;
-        updateImageTransform();
-    });
-
-    document.getElementById('rotate-360').addEventListener('click', () => {
-        animate360Rotation();
-    });
-
-    // Mouse wheel zoom (optional enhancement)
+    // Mouse wheel zoom
     viewerImage.addEventListener('wheel', (e) => {
         e.preventDefault();
         if (e.deltaY < 0) {
@@ -822,29 +805,34 @@ function setupImageViewerControls() {
     });
 }
 
+function toggleWishlist(productName) {
+    const btn = document.getElementById('wishlist-btn');
+    const icon = btn.querySelector('i');
+
+    // Simple toggle logic (visual only for now, can be expanded to storage)
+    if (icon.classList.contains('far')) {
+        // Add to wishlist
+        icon.classList.remove('far');
+        icon.classList.add('fas');
+        btn.classList.add('active'); // CSS can style this red
+        btn.style.color = 'red';
+        alert(`${productName} added to wishlist!`);
+    } else {
+        // Remove from wishlist
+        icon.classList.remove('fas');
+        icon.classList.add('far');
+        btn.classList.remove('active');
+        btn.style.color = '';
+        alert(`${productName} removed from wishlist.`);
+    }
+}
+
 function updateImageTransform() {
     const viewerImage = document.getElementById('viewer-image');
-    viewerImage.style.transform = `scale(${currentZoom}) rotate(${currentRotation}deg)`;
+    viewerImage.style.transform = `scale(${currentZoom})`;
 }
 
-function animate360Rotation() {
-    const viewerImage = document.getElementById('viewer-image');
-    let rotationStep = 0;
-    const totalSteps = 36; // 10 degree increments
-    const interval = 30; // milliseconds
 
-    const rotationInterval = setInterval(() => {
-        rotationStep++;
-        currentRotation = (rotationStep * 10) % 360;
-        updateImageTransform();
-
-        if (rotationStep >= totalSteps) {
-            clearInterval(rotationInterval);
-            currentRotation = 0;
-            updateImageTransform();
-        }
-    }, interval);
-}
 
 // ===================================
 // SECTION NAVIGATION (Home, Buy, Sell, Profile)
