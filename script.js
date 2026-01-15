@@ -1392,8 +1392,8 @@ function updateUserUI(user) {
                     <button class="btn btn-secondary" onclick="handleLogout()" style="padding: 0.5rem 1.5rem;">Logout</button>
                 </div>
                 
-                <div class="welcome-video-container" style="max-height: 400px; border-color: var(--color-cta); overflow: hidden; border-radius: 12px; position: relative;">
-                    <img src="assets/welcome_header.png" alt="Welcome to Chased" class="welcome-video" id="profile-welcome-video" style="object-fit: cover; object-position: center 20%; width: 100%; height: 100%; display: block; margin: 0; padding: 0;">
+                <div class="welcome-video-container" style="max-height: 400px; border-color: var(--color-cta); overflow: hidden; border-radius: 12px; position: relative; background-color: #1a1a1a;">
+                    <img src="assets/welcome_header.png" alt="Welcome to Chased" class="welcome-video" id="profile-welcome-video" style="object-fit: contain; object-position: center; width: 100%; height: 100%; display: block; margin: 0; padding: 0;">
                     <div style="position: absolute; bottom: 20px; left: 20px; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 8px; backdrop-filter: blur(5px); border-left: 3px solid var(--color-cta);">
                         <p style="margin: 0; font-size: 0.9rem;">TRENDING NOW</p>
                         <h3 style="margin: 0; color: #fff;">Summer Collection 2026</h3>
