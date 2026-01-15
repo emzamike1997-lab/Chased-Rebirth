@@ -640,9 +640,10 @@ async function loadRebirthItems() {
 
     } catch (err) {
         console.error('Error loading items:', err);
+        alert(`Failed to load Rebirth items: ${err.message}`);
         categories.forEach(cat => {
             const grid = document.getElementById(`rebirth-${cat}-grid`);
-            if (grid) grid.innerHTML = '<p style="color: red;">Failed to load items.</p>';
+            if (grid) grid.innerHTML = '<p style="color: red;">Failed to load items. Please try again later.</p>';
         });
     }
 }
@@ -894,6 +895,8 @@ function navigateToSection(sectionName) {
 
     // Load Rebirth items if navigating to Rebirth section
     if (sectionName === 'rebirth') {
+        const rebirthMarket = document.getElementById('rebirth-marketplace');
+        if (rebirthMarket) rebirthMarket.style.display = 'block';
         loadRebirthItems();
     }
 
