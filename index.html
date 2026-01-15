@@ -114,14 +114,7 @@
             <!-- HOME SECTION -->
             <section class="content-section" id="home-section" style="display: none;">
                 <!-- Restored Text Header -->
-                <div class="home-text-header">
-                    <h1 class="hero-title">Welcome to CHASED</h1>
-                    <p class="hero-subtitle">chase the ideal beauty</p>
-
-
-                </div>
-
-                <!-- 2500px Hero Banner (Branded) -->
+                <!-- 2500px Hero Banner (Video First) -->
                 <div class="home-hero-wide">
                     <div class="hero-banner-container">
                         <video autoplay loop muted playsinline class="hero-banner-img" id="home-hero-video">
@@ -129,38 +122,49 @@
                             Your browser does not support the video tag.
                         </video>
                     </div>
+                </div>
 
-                    <div class="hero-actions"
-                        style="display: flex; justify-content: center; gap: 20px; margin: 40px 0;">
-                        <button class="btn btn-primary hero-btn" onclick="navigateToSection('buy')">Shop
-                            Now</button>
-                        <button class="btn btn-secondary hero-btn" onclick="navigateToSection('sell')">Start
-                            Selling</button>
+                <!-- Text Header (Middle) -->
+                <div class="home-text-header">
+                    <h1 class="hero-title">Welcome to CHASED</h1>
+                    <p class="hero-subtitle">chase the ideal beauty</p>
+                    <p class="hero-description">
+                        Discover premium boots and bags crafted for the modern woman.<br>
+                        Explore our exclusive collection of luxury footwear and accessories.
+                    </p>
+                </div>
+
+                <!-- Buttons (Bottom) -->
+                <div class="hero-actions"
+                    style="display: flex; justify-content: center; gap: 20px; margin: 0 0 40px 0;">
+                    <button class="btn btn-primary hero-btn" onclick="navigateToSection('buy')">Shop
+                        Now</button>
+                    <button class="btn btn-secondary hero-btn" onclick="navigateToSection('sell')">Start
+                        Selling</button>
+                </div>
+
+                <!-- Aesthetic Grid (Female Fashion Focus) -->
+                <div class="home-aesthetic-section">
+                    <div class="aesthetic-text-block">
+                        <h2>Curated for Her</h2>
+                        <p>
+                            From dazzling evening wear to street-chic ensembles.
+                            Find your perfect look in our exclusive "Chased" collection.
+                        </p>
+                        <div class="aesthetic-features-list">
+                            <span><i class="fas fa-heart"></i> Exclusive Designs</span>
+                            <span><i class="fas fa-star"></i> Top Rated</span>
+                        </div>
                     </div>
 
-                    <!-- Aesthetic Grid (Female Fashion Focus) -->
-                    <div class="home-aesthetic-section">
-                        <div class="aesthetic-text-block">
-                            <h2>Curated for Her</h2>
-                            <p>
-                                From dazzling evening wear to street-chic ensembles.
-                                Find your perfect look in our exclusive "Chased" collection.
-                            </p>
-                            <div class="aesthetic-features-list">
-                                <span><i class="fas fa-heart"></i> Exclusive Designs</span>
-                                <span><i class="fas fa-star"></i> Top Rated</span>
-                            </div>
+                    <div class="home-aesthetic-grid">
+                        <div class="home-aesthetic-card portrait-card">
+                            <img src="assets/home/aesthetic_chic.png" alt="Stylish Female Outfit">
                         </div>
-
-                        <div class="home-aesthetic-grid">
-                            <div class="home-aesthetic-card portrait-card">
-                                <img src="assets/home/aesthetic_chic.png" alt="Stylish Female Outfit">
-                            </div>
-                            <div class="home-aesthetic-card detail-card">
-                                <img src="assets/home/aesthetic_detail.png" alt="Luxury Accessories Detail">
-                                <div class="card-overlay">
-                                    <span>Premium Details</span>
-                                </div>
+                        <div class="home-aesthetic-card detail-card">
+                            <img src="assets/home/aesthetic_detail.png" alt="Luxury Accessories Detail">
+                            <div class="card-overlay">
+                                <span>Premium Details</span>
                             </div>
                         </div>
                     </div>
