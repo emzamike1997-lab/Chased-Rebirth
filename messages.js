@@ -407,7 +407,7 @@ function createMessagesModal() {
                     <button class="modal-close" onclick="document.getElementById('messages-modal').classList.remove('active')">&times;</button>
                 </div>
                 
-                <div id="chat-messages" class="chat-messages" style="flex: 1; overflow-y: auto; padding: 15px; background: #1a1a1a; display: flex; flex-direction: column;">
+                <div id="chat-messages" class="chat-messages" style="flex: 1; overflow-y: auto; padding: 15px; background: url('assets/chat_bg.jpg') no-repeat center center; background-size: cover; display: flex; flex-direction: column;">
                     <!-- Bubble -->
                 </div>
 
