@@ -1689,6 +1689,14 @@ async function handlePaymentProcess(e) {
 // Make globally available
 window.openCheckout = openCheckout;
 
+// Bind Checkout Form Globally
+document.addEventListener('DOMContentLoaded', () => {
+    const checkoutForm = document.getElementById('checkout-form');
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', handlePaymentProcess);
+    }
+});
+
 // ===================================
 // PRODUCT CATEGORIES (Dresses, Footwear, Tops, Pants)
 // ===================================
