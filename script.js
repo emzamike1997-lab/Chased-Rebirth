@@ -1663,8 +1663,14 @@ function updateUserUI(user) {
                         </div>
                     </form>
                 </div>
+                </div>
             </div>
         `;
+
+        // Provide immediate feedback by rendering activity list
+        setTimeout(() => {
+            renderRecentActivity();
+        }, 100);
     }
 }
 
