@@ -685,9 +685,16 @@ async function loadRebirthItems() {
         items.forEach(item => {
             // Normalize category matching (case insensitive)
             const catKey = item.category ? item.category.toLowerCase().trim() : 'others';
-            // Simple mapping to ensure valid ID
 
-            const targetGrid = document.getElementById(`rebirth-${catKey}-grid`);
+            // Try specific grid first, fallback to 'dresses' (as a clearer default) or just log it
+            let targetGrid = document.getElementById(`rebirth-${catKey}-grid`);
+
+            // Debugging: Log if grid missing
+            if (!targetGrid) {
+                console.warn(`CHASED: No grid found for category '${catKey}' (Item: ${item.title}). Defaulting to 'dresses' for visibility.`);
+                targetGrid = document.getElementById('rebirth-dresses-grid');
+            }
+
             if (targetGrid) {
                 const safeTitle = item.title.replace(/'/g, "\\'");
                 const itemHTML = `
