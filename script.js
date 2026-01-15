@@ -534,7 +534,7 @@ function openListingForm() {
 
                         <div class="form-group" style="margin-bottom: 15px;">
                              <label class="dashboard-label">Category</label>
-                             <select id="item-category" class="form-input" required>
+                             <select id="list-category" class="form-input" required>
                                 <option value="dresses">Dresses</option>
                                 <option value="footwear">Footwear</option>
                                 <option value="tops">Tops</option>
@@ -1560,6 +1560,7 @@ async function handleLogout() {
 window.handleLogout = handleLogout;
 window.showSellMenu = showSellMenu;
 window.openListingForm = openListingForm;
+window.showSellModal = openListingForm; // Alias for dashboard button
 
 // ===================================
 // PRODUCT CATEGORIES (Dresses, Footwear, Tops, Pants)
