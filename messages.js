@@ -426,34 +426,143 @@ function createMessagesModal() {
         </div>
     </div>
     <style>
-        .conversation-item {
-            display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #333; cursor: pointer; transition: background 0.2s;
+        .modal-content {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: #000; /* Fallback */
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
-        .conversation-item:hover { background: rgba(255,255,255,0.05); }
-        .conv-avatar { width: 40px; height: 40px; background: #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; }
-        .conv-details h4 { margin: 0 0 5px 0; font-size: 0.95rem; }
-        .conv-details p { margin: 0; font-size: 0.8rem; color: #888; }
-        .conv-arrow { margin-left: auto; color: #555; }
 
-        .message-wrapper { margin-bottom: 15px; display: flex; flex-direction: column; max-width: 80%; }
+        /* --- Scrollbar --- */
+        .chat-messages::-webkit-scrollbar { width: 6px; }
+        .chat-messages::-webkit-scrollbar-track { background: transparent; }
+        .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+        .chat-messages::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+
+        /* --- List View --- */
+        .conversation-item {
+            display: flex; align-items: center; padding: 18px 25px; 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .conversation-item:hover { 
+            background: rgba(255,255,255,0.08); 
+            padding-left: 30px; /* Slight slide effect */
+        }
+        .conv-avatar { 
+            width: 48px; height: 48px; 
+            background: linear-gradient(135deg, #333, #111); 
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            margin-right: 18px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .conv-details h4 { margin: 0 0 4px 0; font-size: 1rem; font-weight: 600; letter-spacing: 0.3px; color: #fff; }
+        .conv-details p { margin: 0; font-size: 0.85rem; color: rgba(255,255,255,0.5); }
+        .conv-arrow { margin-left: auto; color: rgba(255,255,255,0.3); transition: transform 0.3s; }
+        .conversation-item:hover .conv-arrow { transform: translateX(3px); color: #fff; }
+
+        /* --- Chat View --- */
+        #chat-messages {
+            /* Background handles by inline style, but we add overlay here if needed */
+            position: relative;
+        }
+        /* Gradient Overlay for Background Readability */
+        #chat-messages::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.7) 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .message-wrapper { 
+            margin-bottom: 20px; 
+            display: flex; flex-direction: column; 
+            max-width: 75%; 
+            z-index: 1; /* Above overlay */
+            animation: slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            opacity: 0; transform: translateY(15px);
+        }
+        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+
         .message-align-right { align-self: flex-end; align-items: flex-end; }
         .message-align-left { align-self: flex-start; align-items: flex-start; }
-
-        .message { padding: 10px 15px; border-radius: 15px; font-size: 0.9rem; position: relative; cursor: pointer; transition: transform 0.1s; }
+        
+        .message { 
+            padding: 14px 20px; 
+            border-radius: 18px; 
+            font-size: 0.95rem; line-height: 1.5; 
+            position: relative; cursor: pointer; 
+            transition: all 0.2s; 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .message:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
         .message:active { transform: scale(0.98); }
         
-        .message-style-buyer { background: #444; color: white; border: 1px solid #555; } /* Grey for Buyer */
-        .message-style-seller { background: #000; color: white; border: 1px solid #333; } /* Black for Seller */
-
-        /* Improve styling for Me (Black/Right) vs Them (Grey/Left) if we ignore roles? No, stick to request. */
+        /* Buyer (Grey Glass) */
+        .message-style-buyer { 
+            background: rgba(80, 80, 80, 0.6); 
+            color: rgba(255,255,255,0.95); 
+            border: 1px solid rgba(255,255,255,0.1);
+            border-bottom-left-radius: 4px; /* Distinct shape */
+        } 
         
-        .message-sender-name { font-size: 0.7rem; color: #888; margin-bottom: 3px; margin-left: 5px; margin-right: 5px; }
+        /* Seller (Black Glass) */
+        .message-style-seller { 
+            background: rgba(0, 0, 0, 0.75); 
+            color: #fff; 
+            border: 1px solid rgba(255,255,255,0.15);
+            border-bottom-right-radius: 4px; /* Distinct shape */
+        } 
 
-        .message-meta { display: flex; justify-content: flex-end; align-items: center; margin-top: 5px; opacity: 0.7; gap: 5px; }
-        .message-time { font-size: 0.6rem; }
-        .message-status { font-size: 0.7rem; display: flex; align-items: center; } /* Bag icon */
+        .message-sender-name { 
+            font-size: 0.75rem; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase;
+            color: rgba(255,255,255,0.6); 
+            margin-bottom: 6px; margin-left: 2px; margin-right: 2px; 
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
 
-        .message-quote { background: rgba(255,255,255,0.1); border-left: 2px solid var(--color-cta); padding: 5px; margin-bottom: 5px; font-size: 0.8rem; border-radius: 4px; opacity: 0.8; }
+        .message-meta { 
+            display: flex; justify-content: flex-end; align-items: center; 
+            margin-top: 6px; 
+            opacity: 0.8; gap: 6px; 
+        }
+        .message-time { font-size: 0.65rem; font-weight: 400; color: rgba(255,255,255,0.7); }
+        .message-status { font-size: 0.75rem; }
+
+        .message-quote { 
+            background: rgba(0,0,0,0.3); 
+            border-left: 3px solid var(--color-cta); 
+            padding: 8px 12px; margin-bottom: 8px; 
+            font-size: 0.85rem; font-style: italic; color: rgba(255,255,255,0.8);
+            border-radius: 6px; 
+        }
+
+        /* --- Input Area --- */
+        .chat-input-area {
+            background: rgba(20, 20, 20, 0.95) !important;
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255,255,255,0.08) !important;
+            padding: 20px !important;
+        }
+        #chat-input {
+            background: rgba(255,255,255,0.05) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            color: #fff !important;
+            padding: 12px 20px !important;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        #chat-input:focus {
+            background: rgba(255,255,255,0.1) !important;
+            border-color: rgba(255,255,255,0.3) !important;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.05);
+        }
     </style>
     `;
 
