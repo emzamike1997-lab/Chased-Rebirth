@@ -57,25 +57,12 @@ async function renderConversationList(conversations, currentUserId) {
         return;
     }
 
-    // Fetch user names for all participants
-    for (const conv of conversations) {
+    // Display names stored in conversations table
+    conversations.forEach(conv => {
         const isBuyer = conv.buyer_id === currentUserId;
-        const otherUserId = isBuyer ? conv.seller_id : conv.buyer_id;
-        const role = isBuyer ? "Seller" : "Buyer";
 
-        // Try to fetch the other user's email/name
-        let displayName = role; // Fallback
-        try {
-            const { data: userData } = await supabaseClient.auth.admin.getUserById(otherUserId);
-            if (userData?.user?.user_metadata?.full_name) {
-                displayName = userData.user.user_metadata.full_name;
-            } else if (userData?.user?.email) {
-                displayName = userData.user.email.split('@')[0]; // Fallback to email username
-            }
-        } catch (err) {
-            // If we can't fetch user data, try getting from metadata or use role
-            console.log('Could not fetch user name, using role');
-        }
+        // Use stored names from conversation table
+        const displayName = isBuyer ? (conv.seller_name || "Seller") : (conv.buyer_name || "Buyer");
 
         const itemHTML = `
             <div class="conversation-item" onclick="openChat('${conv.id}', '${conv.item_title || 'Item Inquiry'}')">
@@ -88,7 +75,7 @@ async function renderConversationList(conversations, currentUserId) {
             </div>
         `;
         list.insertAdjacentHTML('beforeend', itemHTML);
-    }
+    });
 }
 
 // --- THEME LOGIC ---
@@ -162,13 +149,19 @@ async function startChat(sellerId, itemId, itemTitle) {
         openMessagesDashboard();
         setTimeout(() => openChat(existing.id, itemTitle), 500);
     } else {
+        // Get current user's name
+        const buyerName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Buyer';
+
+        // Note: We don't have seller's name here, it will be updated when seller opens the chat
         const { data: newConv, error: createError } = await supabaseClient
             .from('conversations')
             .insert({
                 buyer_id: user.id,
                 seller_id: sellerId,
                 item_id: itemId,
-                item_title: itemTitle
+                item_title: itemTitle,
+                buyer_name: buyerName,
+                seller_name: 'Seller' // Placeholder, will be updated when seller opens chat
             })
             .select()
             .single();
