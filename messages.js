@@ -448,6 +448,55 @@ function backToConversations() {
     activeConversationId = null;
     if (currentSubscription) supabaseClient.removeChannel(currentSubscription);
 
+    // --- VOICE RECORDING LOGIC ---
+    let mediaRecorder;
+    let audioChunks = [];
+    let isRecording = false;
+
+    async function toggleRecording() {
+        const btn = document.getElementById('voice-rec-btn');
+        const input = document.getElementById('chat-input');
+
+        if (!isRecording) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    // For now, we simulate sending a voice message as we don't have a storage backend set up here
+                    // In a real app, you'd upload audioBlob to Supabase Storage and send the URL.
+                    console.log("Recorded Audio Blob:", audioBlob);
+                    sendMessage("🎤 Voice Message Recorded"); // Sending a placeholder text
+
+                    // Stop all tracks to release microphone
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                btn.classList.add('recording');
+                input.placeholder = "Recording...";
+                input.disabled = true;
+
+            } catch (err) {
+                console.error("Microphone access denied:", err);
+                alert("Could not access microphone.");
+            }
+        } else {
+            mediaRecorder.stop();
+            isRecording = false;
+            btn.classList.remove('recording');
+            input.placeholder = "Type a message...";
+            input.disabled = false;
+        }
+    }
+
     // Revert background to normal list view aesthetic
     document.getElementById('messages-modal').classList.remove('chat-active');
 
@@ -500,6 +549,7 @@ function createMessagesModal() {
 
                 <div class="chat-input-area">
                     <input type="text" id="chat-input" placeholder="Type a message...">
+                    <button class="voice-rec-btn" id="voice-rec-btn" onclick="toggleRecording()" title="Record Voice Message"><i class="fas fa-microphone"></i></button>
                     <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>
@@ -769,6 +819,24 @@ function createMessagesModal() {
             box-shadow: 0 0 0 3px rgba(128,128,128,0.1);
         }
         
+        .voice-rec-btn {
+            border-radius: 50%; width: 40px; height: 40px; 
+            padding: 0; display:flex; align-items:center; justify-content:center;
+            background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); 
+            cursor: pointer; transition: all 0.3s;
+        }
+        .voice-rec-btn:hover { background: rgba(255,255,255,0.2); }
+        .voice-rec-btn.recording {
+            background: #ff4b2b;
+            animation: pulse-red 1.5s infinite;
+            border-color: #ff4b2b;
+        }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(255, 75, 43, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 75, 43, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 75, 43, 0); }
+        }
+
         .send-btn {
             border-radius: 50%; width: 40px; height: 40px; 
             padding: 0; display:flex; align-items:center; justify-content:center;
@@ -802,9 +870,9 @@ function createMessagesModal() {
     applyTheme();
 }
 
-window.toggleTheme = toggleTheme;
-
 // Expose globally
+window.toggleTheme = toggleTheme;
+window.toggleRecording = toggleRecording;
 window.openMessagesDashboard = openMessagesDashboard;
 window.startChat = startChat;
 window.openChat = openChat;
