@@ -237,11 +237,21 @@ function renderMessages(messages, currentUserId, buyerId, sellerId) {
             const duration = msg.voice_metadata.duration || "0:00";
             contentHTML = `
                 <div class="voice-player">
+                    <div class="voice-avatar-container">
+                        <div class="voice-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <i class="fas fa-microphone voice-mic-badge"></i>
+                    </div>
                     <button class="voice-play-btn" onclick="playVoiceMessage('${msg.id}')">
                         <i class="fas fa-play" id="play-icon-${msg.id}"></i>
                     </button>
                     <div class="voice-info">
                         <div class="voice-wave-visual">
+                            <span></span><span></span><span></span><span></span><span></span>
+                            <span></span><span></span><span></span><span></span><span></span>
+                            <span></span><span></span><span></span><span></span><span></span>
+                            <span></span><span></span><span></span><span></span><span></span>
                             <span></span><span></span><span></span><span></span><span></span>
                         </div>
                         <span class="voice-duration">${duration}</span>
@@ -542,13 +552,24 @@ function createMessagesModal() {
         .voice-waves span:nth-child(5) { animation-delay: 0.4s; }
         @keyframes wave { 0%, 100% { height: 5px; } 50% { height: 20px; } }
 
-        .voice-player { display: flex; align-items: center; gap: 15px; padding: 5px 0; }
-        .voice-play-btn { width: 35px; height: 35px; border-radius: 50%; border: none; background: var(--color-cta); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; }
+        .voice-player { display: flex; align-items: center; gap: 12px; padding: 5px 0; min-width: 260px; }
+        .voice-avatar-container { position: relative; width: 45px; height: 45px; flex-shrink: 0; }
+        .voice-avatar { width: 100%; height: 100%; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+        .voice-avatar i { font-size: 1.5rem; color: rgba(255,255,255,0.5); }
+        .voice-mic-badge { position: absolute; bottom: 0; right: 0; font-size: 0.8rem; color: #53bdeb; background: var(--msg-header-bg); border-radius: 50%; padding: 2px; border: 1px solid var(--msg-border); }
+        
+        .voice-play-btn { background: none; border: none; color: #fff; cursor: pointer; font-size: 1.6rem; padding: 0; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
         .voice-play-btn:hover { transform: scale(1.1); }
-        .voice-info { flex: 1; display: flex; flex-direction: column; gap: 5px; }
-        .voice-wave-visual { display: flex; align-items: center; gap: 2px; height: 15px; opacity: 0.5; }
-        .voice-wave-visual span { width: 2px; height: 5px; background: #fff; border-radius: 2px; }
-        .voice-duration { font-size: 0.75rem; color: rgba(255,255,255,0.7); font-family: monospace; }
+        
+        .voice-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+        .voice-wave-visual { display: flex; align-items: center; gap: 2px; height: 24px; }
+        .voice-wave-visual span { width: 2px; height: 8px; background: rgba(255,255,255,0.3); border-radius: 1px; transition: height 0.2s; }
+        .voice-wave-visual span:nth-child(3n) { height: 16px; }
+        .voice-wave-visual span:nth-child(5n) { height: 12px; }
+        .voice-wave-visual span:nth-child(7n) { height: 20px; }
+        .voice-wave-visual span:nth-child(2n) { height: 6px; }
+        
+        .voice-duration { font-size: 0.7rem; color: rgba(255,255,255,0.6); font-family: 'Inter', sans-serif; }
     </style>
     `;
     document.body.insertAdjacentHTML('beforeend', html);
