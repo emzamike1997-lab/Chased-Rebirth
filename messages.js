@@ -243,17 +243,17 @@ function renderMessages(messages, currentUserId, buyerId, sellerId) {
         const alignClass = isMe ? 'message-align-right' : 'message-align-left';
         const styleClass = isSenderBuyer ? 'message-style-buyer' : 'message-style-seller';
 
-        let quoteHTML = '';
+        let replyHTML = '';
         if (msg.reply_to_id) {
             const quoted = messages.find(m => m.id === msg.reply_to_id);
-            if (quoted) quoteHTML = `<div class="message-quote">${quoted.content}</div>`;
+            if (quoted) replyHTML = `<div class="message-quote">${quoted.content}</div>`;
         }
 
         let statusIcon = isMe ? (msg.is_read ? '<i class="fas fa-box-open"></i>' : '<i class="fas fa-shopping-bag"></i>') : '';
-        let nameDisplay = activeParticipants[msg.sender_id] || (isSenderBuyer ? "Buyer" : "Seller");
-        if (isMe) nameDisplay = "Me";
+        let nameDisplay = isMe ? "Me" : (activeParticipants[msg.sender_id] || (isSenderBuyer ? "Buyer" : "Seller"));
+        const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-        let contentHTML = `<div class="message-content">${msg.content}</div>`;
+        let contentHTML = `<div class="message-content-text">${msg.content}</div>`;
 
         // Render Voice Player if metadata exists
         if (msg.voice_metadata && msg.voice_metadata.is_voice) {
@@ -261,9 +261,7 @@ function renderMessages(messages, currentUserId, buyerId, sellerId) {
             contentHTML = `
                 <div class="voice-player">
                     <div class="voice-avatar-container">
-                        <div class="voice-avatar">
-                            <i class="fas fa-user"></i>
-                        </div>
+                        <div class="voice-avatar"><i class="fas fa-user"></i></div>
                         <i class="fas fa-microphone voice-mic-badge"></i>
                     </div>
                     <button class="voice-play-btn" onclick="playVoiceMessage('${msg.id}')">
@@ -284,20 +282,45 @@ function renderMessages(messages, currentUserId, buyerId, sellerId) {
             `;
         }
 
-        const msgHTML = `
+        // Reactions
+        let reactionsHTML = '';
+        if (msg.reactions && Object.keys(msg.reactions).length > 0) {
+            reactionsHTML = '<div class="message-reactions">';
+            for (const [emoji, users] of Object.entries(msg.reactions)) {
+                if (users.length > 0) {
+                    const hasReacted = users.includes(currentUserId);
+                    reactionsHTML += `
+                        <span class="reaction-tag ${hasReacted ? 'active' : ''}" onclick="toggleReaction('${msg.id}', '${emoji}')">
+                            ${emoji} <span class="reaction-count">${users.length}</span>
+                        </span>
+                    `;
+                }
+            }
+            reactionsHTML += '</div>';
+        }
+
+        const messageHTML = `
             <div class="message-wrapper ${alignClass}">
                 <div class="message-sender-name">${nameDisplay}</div>
-                <div class="message ${styleClass}" onclick="triggerReply('${msg.id}', '${escapeHtml(msg.content)}')">
-                    ${quoteHTML}
-                    ${contentHTML}
-                    <div class="message-meta">
-                        <span class="message-time">${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                        <span class="message-status">${statusIcon}</span>
+                <div class="message ${styleClass}" id="msg-${msg.id}">
+                    <div class="message-bubble" onclick="triggerReply('${msg.id}', '${escapeHtml(msg.content)}')">
+                        ${replyHTML}
+                        <div class="message-content">
+                            ${contentHTML}
+                            <div class="message-meta">
+                                <span class="message-time">${time}</span>
+                                <span class="message-status">${statusIcon}</span>
+                            </div>
+                        </div>
+                        ${reactionsHTML}
+                        <button class="reaction-btn" onclick="showReactionPicker(event, '${msg.id}')">
+                            <i class="far fa-smile"></i>
+                        </button>
                     </div>
                 </div>
             </div>
         `;
-        container.insertAdjacentHTML('beforeend', msgHTML);
+        container.insertAdjacentHTML('beforeend', messageHTML);
     });
 }
 
@@ -374,6 +397,7 @@ async function toggleRecording() {
     const input = document.getElementById('chat-input');
     const timerDisplay = document.getElementById('recording-timer');
     const waves = document.getElementById('recording-waves');
+    const inputContainer = document.querySelector('.input-container'); // Get the new input container
 
     if (!isRecording) {
         try {
@@ -402,7 +426,7 @@ async function toggleRecording() {
             mediaRecorder.start();
             isRecording = true;
             btn.classList.add('recording');
-            input.style.display = 'none';
+            inputContainer.style.display = 'none'; // Hide the input container
             timerDisplay.style.display = 'block';
             waves.style.display = 'flex';
 
@@ -421,7 +445,7 @@ async function toggleRecording() {
         isRecording = false;
         clearInterval(timerInterval);
         btn.classList.remove('recording');
-        input.style.display = 'block';
+        inputContainer.style.display = 'flex'; // Show the input container
         timerDisplay.style.display = 'none';
         timerDisplay.textContent = '0:00';
         waves.style.display = 'none';
@@ -553,7 +577,77 @@ function endCall() {
     callStartTime = null;
 }
 
-// 7. Helpers
+// 7. Emoji & Reactions
+let activeReactionMessageId = null;
+
+function toggleEmojiPicker() {
+    const picker = document.getElementById('emoji-picker');
+    picker.style.display = picker.style.display === 'block' ? 'none' : 'block';
+}
+
+function insertEmoji(emoji) {
+    const input = document.getElementById('chat-input');
+    input.value += emoji;
+    input.focus();
+    toggleEmojiPicker();
+}
+
+function showReactionPicker(event, msgId) {
+    event.stopPropagation();
+    activeReactionMessageId = msgId;
+    const picker = document.getElementById('reaction-picker');
+    const rect = event.currentTarget.getBoundingClientRect();
+
+    picker.style.display = 'flex';
+    picker.style.top = `${rect.top - 45}px`;
+    picker.style.left = `${rect.left}px`;
+
+    // Close on click anywhere else
+    const closePicker = () => {
+        picker.style.display = 'none';
+        document.removeEventListener('click', closePicker);
+    };
+    setTimeout(() => document.addEventListener('click', closePicker), 10);
+}
+
+async function handleReactionSelect(emoji) {
+    if (activeReactionMessageId) {
+        await toggleReaction(activeReactionMessageId, emoji);
+    }
+}
+
+async function toggleReaction(msgId, emoji) {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) return;
+
+    // Fetch current reactions
+    const { data: msg } = await supabaseClient
+        .from('messages')
+        .select('reactions')
+        .eq('id', msgId)
+        .single();
+
+    let reactions = msg.reactions || {};
+    if (!reactions[emoji]) reactions[emoji] = [];
+
+    if (reactions[emoji].includes(user.id)) {
+        // Remove reaction
+        reactions[emoji] = reactions[emoji].filter(id => id !== user.id);
+    } else {
+        // Add reaction
+        reactions[emoji].push(user.id);
+    }
+
+    // Clean up empty emoji arrays
+    if (reactions[emoji].length === 0) delete reactions[emoji];
+
+    await supabaseClient
+        .from('messages')
+        .update({ reactions })
+        .eq('id', msgId);
+}
+
+// 8. Helpers
 function triggerReply(msgId, content) {
     activeReplyId = msgId;
     const rb = document.getElementById('reply-bar');
@@ -607,10 +701,19 @@ function createMessagesModal() {
                     <button onclick="hideReplyUI()"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="chat-input-area">
-                    <button class="attach-btn" onclick="document.getElementById('file-input').click()"><i class="fas fa-plus"></i></button>
+                    <button class="btn-icon emoji-btn" onclick="toggleEmojiPicker()"><i class="far fa-smile"></i></button>
+                    <button class="btn-icon attach-btn" id="attach-btn" onclick="document.getElementById('file-input').click()"><i class="fas fa-plus"></i></button>
                     <input type="file" id="file-input" style="display:none" accept="image/*" onchange="handleFileSelect(event)">
+                    <div class="input-container">
+                        <div id="reply-bar" class="reply-bar">
+                            <div class="reply-content">
+                                <span id="reply-text">Replying...</span>
+                            </div>
+                            <button class="close-reply" onclick="hideReplyUI()">&times;</button>
+                        </div>
+                        <input type="text" id="chat-input" placeholder="Type a message..." autocomplete="off">
+                    </div>
                     <div id="recording-status" style="flex: 1; display: flex; align-items: center; gap: 10px;">
-                        <input type="text" id="chat-input" placeholder="Type a message...">
                         <div id="recording-timer" style="display:none; color: #ff4b2b; font-weight: bold; font-family: monospace;">0:00</div>
                         <div id="recording-waves" class="voice-waves" style="display:none;">
                             <span></span><span></span><span></span><span></span><span></span>
@@ -619,7 +722,28 @@ function createMessagesModal() {
                     <button class="voice-rec-btn" id="voice-rec-btn" onclick="toggleRecording()"><i class="fas fa-microphone"></i></button>
                     <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
                 </div>
+                
+                <div id="emoji-picker" class="emoji-picker">
+                    <div class="emoji-list">
+                        <span onclick="insertEmoji('😀')">😀</span><span onclick="insertEmoji('😂')">😂</span><span onclick="insertEmoji('😍')">😍</span>
+                        <span onclick="insertEmoji('😎')">😎</span><span onclick="insertEmoji('🤔')">🤔</span><span onclick="insertEmoji('😊')">😊</span>
+                        <span onclick="insertEmoji('🔥')">🔥</span><span onclick="insertEmoji('✨')">✨</span><span onclick="insertEmoji('💯')">💯</span>
+                        <span onclick="insertEmoji('👍')">👍</span><span onclick="insertEmoji('❤️')">❤️</span><span onclick="insertEmoji('🙌')">🙌</span>
+                        <span onclick="insertEmoji('😂')">😂</span><span onclick="insertEmoji('😢')">😢</span><span onclick="insertEmoji('😮')">😮</span>
+                        <span onclick="insertEmoji('👏')">👏</span><span onclick="insertEmoji('🎉')">🎉</span><span onclick="insertEmoji('🚀')">🚀</span>
+                    </div>
+                </div>
             </div>
+        </div>
+
+        <!-- Global Reaction Picker -->
+        <div id="reaction-picker" class="reaction-picker">
+            <span onclick="handleReactionSelect('❤️')">❤️</span>
+            <span onclick="handleReactionSelect('👍')">👍</span>
+            <span onclick="handleReactionSelect('😂')">😂</span>
+            <span onclick="handleReactionSelect('😮')">😮</span>
+            <span onclick="handleReactionSelect('😢')">😢</span>
+            <span onclick="handleReactionSelect('🔥')">🔥</span>
         </div>
         
         <!-- Call Overlay -->
@@ -728,6 +852,26 @@ function createMessagesModal() {
         .call-timer { font-size: 1.5rem; font-family: monospace; margin: 15px 0; color: var(--color-cta); display: none; }
         .hangup-btn { width: 60px; height: 60px; border-radius: 50%; border: none; background: #ff4b2b; color: #fff; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; margin: 20px auto 0; }
         .hangup-btn:hover { transform: scale(1.1); background: #e03a1d; }
+
+        /* Emoji & Reactions */
+        .emoji-picker { display: none; position: absolute; bottom: 80px; left: 20px; background: var(--msg-header-bg); border: 1px solid var(--msg-border); border-radius: 12px; padding: 10px; z-index: 1001; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 220px; }
+        .emoji-list { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; font-size: 1.2rem; }
+        .emoji-list span { cursor: pointer; padding: 5px; transition: transform 0.2s; text-align: center; }
+        .emoji-list span:hover { transform: scale(1.3); }
+
+        .reaction-btn { position: absolute; top: 0; right: -30px; background: none; border: none; font-size: 0.9rem; color: var(--msg-text-sec); cursor: pointer; opacity: 0; transition: opacity 0.2s; }
+        .message-bubble:hover .reaction-btn { opacity: 1; }
+        .sent .reaction-btn { right: auto; left: -30px; }
+
+        .message-reactions { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+        .reaction-tag { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 2px 8px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.2s; }
+        .reaction-tag:hover { background: rgba(255,255,255,0.15); }
+        .reaction-tag.active { border-color: var(--color-cta); background: rgba(83, 189, 235, 0.1); }
+        .reaction-count { font-size: 0.75rem; opacity: 0.8; }
+
+        .reaction-picker { display: none; position: fixed; background: var(--msg-header-bg); border: 1px solid var(--msg-border); border-radius: 30px; padding: 5px 15px; z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.5); gap: 10px; font-size: 1.2rem; backdrop-filter: blur(10px); }
+        .reaction-picker span { cursor: pointer; transition: transform 0.2s; }
+        .reaction-picker span:hover { transform: scale(1.4); }
     </style>
     `;
     document.body.insertAdjacentHTML('beforeend', html);
@@ -735,14 +879,12 @@ function createMessagesModal() {
     applyTheme();
 }
 
-window.openMessagesDashboard = openMessagesDashboard;
-window.startChat = startChat;
-window.openChat = openChat;
-window.toggleTheme = toggleTheme;
-window.toggleRecording = toggleRecording;
-window.handleFileSelect = handleFileSelect;
-window.backToConversations = backToConversations;
 window.sendMessage = sendMessage;
 window.hideReplyUI = hideReplyUI;
 window.startCall = startCall;
 window.endCall = endCall;
+window.toggleEmojiPicker = toggleEmojiPicker;
+window.insertEmoji = insertEmoji;
+window.showReactionPicker = showReactionPicker;
+window.handleReactionSelect = handleReactionSelect;
+window.toggleReaction = toggleReaction;
