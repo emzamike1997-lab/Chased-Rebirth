@@ -41,6 +41,11 @@ async function restoreSession() {
             console.log('CHASED: Session restored for', session.user.email);
             updateUserUI(session.user);
             loadCartFromDB(); // Restore cart items
+
+            // Initialize peer connection for incoming calls
+            if (typeof window.initPeerForCalls === 'function') {
+                window.initPeerForCalls();
+            }
         } else {
             console.log('CHASED: No active session found.');
         }
@@ -1751,6 +1756,11 @@ function updateUserUI(user) {
         setTimeout(() => {
             renderRecentActivity();
         }, 100);
+    }
+
+    // Initialize peer connection for incoming calls
+    if (typeof window.initPeerForCalls === 'function') {
+        window.initPeerForCalls();
     }
 }
 

@@ -20,7 +20,9 @@ let callStartTime = null;
     const script = document.createElement('script');
     script.id = 'peerjs-script';
     script.src = "https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js";
-    script.onload = () => { console.log("PeerJS loaded."); initPeer(); };
+    script.onload = () => {
+        console.log("PeerJS loaded. Peer will initialize when user logs in.");
+    };
     document.head.appendChild(script);
 })();
 
@@ -459,9 +461,26 @@ async function handleFileSelect(event) {
 
 // 6. Calling Implementation
 async function initPeer() {
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user || peer) return;
+    // Check if PeerJS is loaded
+    if (typeof Peer === 'undefined') {
+        console.log('PeerJS not loaded yet. Waiting...');
+        setTimeout(initPeer, 500);
+        return;
+    }
 
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) {
+        console.log('No user logged in. Peer initialization skipped.');
+        return;
+    }
+
+    // If peer already exists and is connected, don't recreate
+    if (peer && !peer.destroyed) {
+        console.log('Peer already initialized and active.');
+        return;
+    }
+
+    console.log('Initializing peer connection for user:', user.id);
     peer = new Peer(user.id, {
         host: '0.peerjs.com',
         port: 443,
@@ -469,8 +488,12 @@ async function initPeer() {
         debug: 1
     });
 
-    peer.on('open', (id) => console.log('Peer connected with ID:', id));
+    peer.on('open', (id) => {
+        console.log('✅ Peer connected! Ready to receive calls. ID:', id);
+    });
+
     peer.on('call', async (incomingCall) => {
+        console.log('📞 Incoming call received!');
         const accept = confirm("Incoming voice call! Accept?");
         if (accept) {
             try {
@@ -479,6 +502,7 @@ async function initPeer() {
                 showCallOverlay("In Call...");
                 handleCallConnection(incomingCall);
             } catch (err) {
+                console.error('Microphone access error:', err);
                 alert("Could not access microphone.");
                 incomingCall.close();
             }
@@ -490,8 +514,9 @@ async function initPeer() {
     peer.on('error', (err) => {
         console.error('Peer error:', err);
         if (err.type === 'peer-unavailable') {
-            // Silently handle offline/unavailable state to keep "Reaching..." UI active
             console.log("Peer unavailable. Maintaining 'Reaching...' state.");
+        } else if (err.type === 'unavailable-id') {
+            console.error('Peer ID already in use. This may indicate multiple tabs open.');
         }
     });
 }
@@ -909,3 +934,4 @@ window.insertEmoji = insertEmoji;
 window.showReactionPicker = showReactionPicker;
 window.handleReactionSelect = handleReactionSelect;
 window.toggleReaction = toggleReaction;
+window.initPeerForCalls = initPeer; // Expose for session restoration
