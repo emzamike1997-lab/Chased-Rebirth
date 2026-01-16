@@ -1234,16 +1234,33 @@ if (contactForm) {
         e.preventDefault();
         const btn = contactForm.querySelector('button');
         const originalText = btn.textContent;
-        btn.textContent = 'Sending...';
+
+        // Get values
+        const nameInput = contactForm.querySelector('input[type="text"]');
+        const messageInput = contactForm.querySelector('textarea');
+        const name = nameInput ? nameInput.value : '';
+        const message = messageInput ? messageInput.value : '';
+
+        btn.textContent = 'Opening Mail...';
         btn.disabled = true;
 
+        // Construct mailto link
+        const subject = encodeURIComponent(`CHASED - New Contact Message from ${name}`);
+        const body = encodeURIComponent(`Name: ${name}\n\nMessage:\n${message}`);
+        const mailtoLink = `mailto:taxmathwes@gmail.com?subject=${subject}&body=${body}`;
+
+        // Delay slightly to show visual state
         setTimeout(() => {
-            alert('Thank you for your message. CHASED support will contact you shortly.');
+            window.location.href = mailtoLink;
+
+            alert('Your email client will now open. Please click "Send" in your email app to finish!');
+
             btn.textContent = originalText;
             btn.disabled = false;
             contactForm.reset();
-            contactModal.classList.remove('active');
-        }, 1000);
+            const contactModal = document.getElementById('contact-modal');
+            if (contactModal) contactModal.classList.remove('active');
+        }, 800);
     });
 }
 
