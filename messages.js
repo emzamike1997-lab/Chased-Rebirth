@@ -206,20 +206,36 @@ async function openChat(conversationId, title) {
 
     const { data: { user } } = await supabaseClient.auth.getUser();
 
-    // Resolve Participants
-    // Note: We don't have a users table public read policy for names usually, so this might fail if policies are strict. 
-    // We will assume we can't fetch names easily without a 'profiles' table or similar. 
-    // Fallback: "Buyer" / "Seller".
+    // Update conversation with current user's name if not already set
+    const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+    const updateData = {};
 
+    if (user.id === convData.buyer_id && !convData.buyer_name) {
+        updateData.buyer_name = userName;
+    } else if (user.id === convData.seller_id && (!convData.seller_name || convData.seller_name === 'Seller')) {
+        updateData.seller_name = userName;
+    }
+
+    // Update if we have data to update
+    if (Object.keys(updateData).length > 0) {
+        await supabaseClient
+            .from('conversations')
+            .update(updateData)
+            .eq('id', conversationId);
+        // Update local copy
+        Object.assign(convData, updateData);
+    }
+
+    // Resolve Participants using stored names
     let otherRole = "";
     if (user.id === convData.buyer_id) {
         activeConversationRole = 'buyer'; // I am the buyer
-        otherRole = "Seller";
-        activeParticipants = { [convData.buyer_id]: "Me", [convData.seller_id]: "Seller" };
+        otherRole = convData.seller_name || "Seller";
+        activeParticipants = { [convData.buyer_id]: "Me", [convData.seller_id]: otherRole };
     } else {
         activeConversationRole = 'seller'; // I am the seller
-        otherRole = "Buyer";
-        activeParticipants = { [convData.seller_id]: "Me", [convData.buyer_id]: "Buyer" };
+        otherRole = convData.buyer_name || "Buyer";
+        activeParticipants = { [convData.seller_id]: "Me", [convData.buyer_id]: otherRole };
     }
 
     // Update Header
