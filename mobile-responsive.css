@@ -203,13 +203,14 @@ video {
         min-height: 28px !important;
         height: 28px !important;
         white-space: nowrap !important;
-        background: rgba(255, 255, 255, 0.08) !important;
+        background: transparent !important;
         border-radius: 4px !important;
         flex-shrink: 0 !important;
         line-height: 1.2 !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
+        color: var(--color-text-body, #FFFFFF) !important;
     }
 
     /* Mobile search - compact icon */
@@ -440,19 +441,21 @@ video {
         padding: 14px;
     }
 
-    /* Video Container */
+    /* Video Container - CENTERED WITH MARGINS */
     .home-hero-wide,
     .hero-banner-container {
-        margin: 0 -20px;
-        border-radius: 0;
-        width: calc(100% + 40px);
+        margin: 0 20px !important;
+        border-radius: 12px !important;
+        width: calc(100% - 40px) !important;
+        overflow: hidden !important;
     }
 
     .welcome-video-container {
         height: 250px;
-        margin: 0 -20px;
-        border-radius: 0;
-        width: calc(100% + 40px);
+        margin: 0 20px !important;
+        border-radius: 12px !important;
+        width: calc(100% - 40px) !important;
+        overflow: hidden !important;
     }
 
     /* Lookbook Overlay Text */
