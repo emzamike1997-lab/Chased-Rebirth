@@ -360,15 +360,16 @@ function createMessagesModal() {
     const html = `
     <div class="modal" id="messages-modal">
         <div class="modal-content messages-modal-content">
-            <div id="conversations-view" style="display:block; height: 100%;">
-                <div class="modal-header">
+            <div id="conversations-view" style="display:block; height: 100%; position: relative;">
+                <div class="view-overlay"></div>
+                <div class="modal-header" style="position: relative; z-index: 2;">
                     <h2 class="modal-title">Messages</h2>
                     <div style="display:flex; gap:15px; align-items:center;">
                         <button class="icon-btn theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
                         <button class="modal-close" onclick="document.getElementById('messages-modal').classList.remove('active')">&times;</button>
                     </div>
                 </div>
-                <div id="conversation-list" class="conversation-list"></div>
+                <div id="conversation-list" class="conversation-list" style="position: relative; z-index: 2;"></div>
             </div>
             <div id="chat-view" style="display:none; flex-direction: column; height: 100%;">
                 <div class="modal-header chat-header">
@@ -399,12 +400,13 @@ function createMessagesModal() {
     </div>
     <style>
         #messages-modal {
-            --msg-bg: #000; --msg-text: #fff; --msg-header-bg: #000;
+            --msg-bg: url('assets/dark_chat_bg.png') no-repeat center center / cover;
+            --msg-text: #fff; --msg-header-bg: #000;
             --msg-border: rgba(255,255,255,0.1); --msg-item-hover: rgba(255,255,255,0.08);
             --msg-input-bg: rgba(20, 20, 20, 0.95); --msg-input-field: rgba(255,255,255,0.05);
             --msg-input-text: #fff; --msg-text-sec: rgba(255,255,255,0.5);
             --msg-btn-color: #fff; --msg-shadow: rgba(0,0,0,0.5);
-            --msg-chat-bg: url('assets/dark_chat_bg.png');
+            --msg-chat-bg: url('assets/chat_bg.jpg');
         }
         #messages-modal.light-theme {
             --msg-bg: url('assets/light_bg.jpg') no-repeat center center / cover;
@@ -421,7 +423,11 @@ function createMessagesModal() {
             display: flex; flex-direction: column; transition: all 0.4s ease;
             position: relative; overflow: hidden; border-radius: 12px;
         }
+        .view-overlay {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.6); z-index: 1; pointer-events: none;
+        }
         #messages-modal.chat-active .messages-modal-content { background: var(--msg-chat-bg) no-repeat center center / cover; }
+        #messages-modal.chat-active .view-overlay { display: none; }
         #messages-modal.chat-active .messages-modal-content::before {
             content: ''; position: absolute; inset: 0;
             background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.8) 100%);
