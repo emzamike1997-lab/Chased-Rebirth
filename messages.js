@@ -7,6 +7,23 @@ let activeConversationId = null;
 let activeReplyId = null;
 let activeParticipants = {};
 
+// Calling Variables
+let peer = null;
+let currentCall = null;
+let localStream = null;
+let callTimerInterval = null;
+let callStartTime = null;
+
+// Dynamically Load PeerJS
+(function loadPeerJS() {
+    if (document.getElementById('peerjs-script')) return;
+    const script = document.createElement('script');
+    script.id = 'peerjs-script';
+    script.src = "https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js";
+    script.onload = () => { console.log("PeerJS loaded."); initPeer(); };
+    document.head.appendChild(script);
+})();
+
 // 1. Open Messages Dashboard
 async function openMessagesDashboard() {
     const { data: { user } } = await supabaseClient.auth.getUser();
@@ -14,6 +31,8 @@ async function openMessagesDashboard() {
         alert("Please login to view messages.");
         return;
     }
+
+    if (!peer) initPeer();
 
     let msgModal = document.getElementById('messages-modal');
     if (!msgModal) {
@@ -188,6 +207,10 @@ async function openChat(conversationId, title) {
             <span id="chat-subtitle" style="font-size: 0.75rem; color: var(--msg-text-sec); font-weight: normal;">${convData.item_title || 'Item Inquiry'}</span>
         </div>
     `;
+
+    // Store target for calling
+    const otherId = (user.id === convData.buyer_id) ? convData.seller_id : convData.buyer_id;
+    document.getElementById('call-btn-header').onclick = () => startCall(otherId, otherName);
 
     const { data: messages } = await supabaseClient
         .from('messages')
@@ -414,7 +437,108 @@ async function handleFileSelect(event) {
     event.target.value = '';
 }
 
-// 6. Helpers
+// 6. Calling Implementation
+async function initPeer() {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user || peer) return;
+
+    peer = new Peer(user.id, {
+        host: '0.peerjs.com',
+        port: 443,
+        secure: true,
+        debug: 1
+    });
+
+    peer.on('open', (id) => console.log('Peer connected with ID:', id));
+    peer.on('call', async (incomingCall) => {
+        const accept = confirm("Incoming voice call! Accept?");
+        if (accept) {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                incomingCall.answer(localStream);
+                showCallOverlay("In Call...");
+                handleCallConnection(incomingCall);
+            } catch (err) {
+                alert("Could not access microphone.");
+                incomingCall.close();
+            }
+        } else {
+            incomingCall.close();
+        }
+    });
+
+    peer.on('error', (err) => {
+        console.error('Peer error:', err);
+        if (err.type === 'peer-unavailable') {
+            alert("User is currently offline and cannot be reached.");
+            endCall();
+        }
+    });
+}
+
+async function startCall(otherId, name) {
+    if (!peer) await initPeer();
+
+    try {
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        showCallOverlay(`Calling ${name}...`);
+
+        currentCall = peer.call(otherId, localStream);
+        handleCallConnection(currentCall);
+    } catch (err) {
+        alert("Microphone access is required for calls.");
+    }
+}
+
+function handleCallConnection(call) {
+    currentCall = call;
+
+    call.on('stream', (remoteStream) => {
+        const audio = new Audio();
+        audio.srcObject = remoteStream;
+        audio.play();
+
+        document.getElementById('call-status-text').textContent = "Connected";
+        startCallTimer();
+    });
+
+    call.on('close', () => endCall());
+    call.on('error', () => endCall());
+}
+
+function showCallOverlay(status) {
+    const overlay = document.getElementById('call-overlay');
+    overlay.style.display = 'flex';
+    document.getElementById('call-status-text').textContent = status;
+}
+
+function startCallTimer() {
+    callStartTime = Date.now();
+    const timerElem = document.getElementById('call-duration-timer');
+    timerElem.style.display = 'block';
+
+    callTimerInterval = setInterval(() => {
+        const elapsed = Math.round((Date.now() - callStartTime) / 1000);
+        const m = Math.floor(elapsed / 60);
+        const s = elapsed % 60;
+        timerElem.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+    }, 1000);
+}
+
+function endCall() {
+    if (currentCall) currentCall.close();
+    if (localStream) localStream.getTracks().forEach(t => t.stop());
+
+    clearInterval(callTimerInterval);
+    const overlay = document.getElementById('call-overlay');
+    overlay.style.display = 'none';
+    document.getElementById('call-duration-timer').textContent = "0:00";
+
+    currentCall = null;
+    localStream = null;
+}
+
+// 7. Helpers
 function triggerReply(msgId, content) {
     activeReplyId = msgId;
     const rb = document.getElementById('reply-bar');
@@ -457,6 +581,7 @@ function createMessagesModal() {
                         <h3 id="chat-title">Chat</h3>
                     </div>
                     <div style="display:flex; gap:15px; align-items:center;">
+                         <button class="icon-btn" id="call-btn-header" title="Start Voice Call"><i class="fas fa-phone"></i></button>
                          <button class="icon-btn theme-toggle" id="theme-toggle-btn-chat" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
                          <button class="modal-close" onclick="document.getElementById('messages-modal').classList.remove('active')">&times;</button>
                     </div>
@@ -479,6 +604,16 @@ function createMessagesModal() {
                     <button class="voice-rec-btn" id="voice-rec-btn" onclick="toggleRecording()"><i class="fas fa-microphone"></i></button>
                     <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
                 </div>
+            </div>
+        </div>
+        
+        <!-- Call Overlay -->
+        <div id="call-overlay" class="call-overlay">
+            <div class="call-content">
+                <div class="call-avatar-large"><i class="fas fa-user"></i></div>
+                <h2 id="call-status-text">Calling...</h2>
+                <div id="call-duration-timer" class="call-timer">0:00</div>
+                <button class="hangup-btn" onclick="endCall()"><i class="fas fa-phone-slash"></i></button>
             </div>
         </div>
     </div>
@@ -570,6 +705,14 @@ function createMessagesModal() {
         .voice-wave-visual span:nth-child(2n) { height: 6px; }
         
         .voice-duration { font-size: 0.7rem; color: rgba(255,255,255,0.6); font-family: 'Inter', sans-serif; }
+
+        /* Call Styles */
+        .call-overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
+        .call-content { text-align: center; color: #fff; }
+        .call-avatar-large { width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem; margin: 0 auto 20px; border: 2px solid var(--color-cta); }
+        .call-timer { font-size: 1.5rem; font-family: monospace; margin: 15px 0; color: var(--color-cta); display: none; }
+        .hangup-btn { width: 60px; height: 60px; border-radius: 50%; border: none; background: #ff4b2b; color: #fff; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; margin: 20px auto 0; }
+        .hangup-btn:hover { transform: scale(1.1); background: #e03a1d; }
     </style>
     `;
     document.body.insertAdjacentHTML('beforeend', html);
@@ -586,3 +729,5 @@ window.handleFileSelect = handleFileSelect;
 window.backToConversations = backToConversations;
 window.sendMessage = sendMessage;
 window.hideReplyUI = hideReplyUI;
+window.startCall = startCall;
+window.endCall = endCall;
