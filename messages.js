@@ -481,6 +481,7 @@ async function initPeer() {
     }
 
     console.log('Initializing peer connection for user:', user.id);
+    ensureCallUIInjected();
     peer = new Peer(user.id, {
         host: '0.peerjs.com',
         port: 443,
@@ -493,24 +494,24 @@ async function initPeer() {
     });
 
     peer.on('call', async (incomingCall) => {
-        console.log('📞 Incoming call received!');
-        const accept = confirm("Incoming voice call! Accept?");
-        if (accept) {
-            try {
-                localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                incomingCall.answer(localStream);
-                showCallOverlay("In Call...");
-                handleCallConnection(incomingCall);
-            } catch (err) {
-                console.error('Microphone access error:', err);
-                alert("Could not access microphone.");
-                incomingCall.close();
-            }
-        } else {
-            incomingCall.close();
-        }
-    });
+        console.log('📞 Incoming call received from:', incomingCall.peer);
+        ensureCallUIInjected();
 
+        // Try to identify caller
+        let callerName = activeParticipants[incomingCall.peer] || "Someone";
+        if (callerName === "Someone") {
+            try {
+                const { data } = await supabaseClient.from('conversations')
+                    .select('buyer_name, seller_name, buyer_id, seller_id')
+                    .or(`buyer_id.eq.${incomingCall.peer},seller_id.eq.${incomingCall.peer}`)
+                    .limit(1)
+                    .single();
+                if (data) callerName = (data.buyer_id === incomingCall.peer) ? data.buyer_name : data.seller_name;
+            } catch (e) { }
+        }
+
+        showIncomingCallUI(incomingCall, callerName);
+    });
     peer.on('error', (err) => {
         console.error('Peer error:', err);
         if (err.type === 'peer-unavailable') {
@@ -521,12 +522,106 @@ async function initPeer() {
     });
 }
 
+function ensureCallUIInjected() {
+    if (document.getElementById('call-overlay')) return;
+
+    const callHTML = `
+    <div class="call-overlay" id="call-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:10000; align-items:center; justify-content:center; backdrop-filter:blur(20px); font-family:'Inter', sans-serif;">
+        <div class="call-content" style="text-align:center; color:#fff;">
+            <div class="call-avatar-large" style="width:100px; height:100px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:3rem; margin:0 auto 20px; border:2px solid var(--color-cta, #53bdeb);"><i class="fas fa-user"></i></div>
+            <h2 id="call-status-text" style="font-size:1.5rem; margin-bottom:10px;">Calling...</h2>
+            <div class="call-timer" id="call-duration-timer" style="font-size:1.2rem; font-family:monospace; margin:15px 0; color:var(--color-cta, #53bdeb); display:none;">0:00</div>
+            <div id="call-actions-container" class="call-actions" style="display: flex; gap: 20px; justify-content: center;">
+                <button class="hangup-btn" onclick="endCall()" style="width:60px; height:60px; border-radius:50%; border:none; background:#ff4b2b; color:#fff; font-size:1.5rem; cursor:pointer; display:flex; align-items:center; justify-content:center;"><i class="fas fa-phone-slash"></i></button>
+            </div>
+        </div>
+    </div>
+    <audio id="remote-call-audio" autoplay style="display:none;"></audio>
+    `;
+    document.body.insertAdjacentHTML('beforeend', callHTML);
+}
+
+let ringtoneInterval;
+function startRingtone() {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    stopRingtone();
+    ringtoneInterval = setInterval(() => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.5);
+    }, 1500);
+}
+
+function stopRingtone() {
+    if (ringtoneInterval) {
+        clearInterval(ringtoneInterval);
+        ringtoneInterval = null;
+    }
+}
+
+function showIncomingCallUI(incomingCall, callerName) {
+    const overlay = document.getElementById('call-overlay');
+    const statusText = document.getElementById('call-status-text');
+    const actionsContainer = document.getElementById('call-actions-container');
+
+    overlay.style.display = 'flex';
+    statusText.textContent = `Incoming call from ${callerName}`;
+
+    startRingtone();
+
+    actionsContainer.innerHTML = `
+        <button class="accept-btn" id="accept-call-btn" style="width:60px; height:60px; border-radius:50%; border:none; background:#4CAF50; color:#fff; font-size:1.5rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform 0.2s;"><i class="fas fa-phone"></i></button>
+        <button class="hangup-btn" onclick="declineCall('${incomingCall.peer}')" style="margin:0;"><i class="fas fa-phone-slash"></i></button>
+    `;
+
+    document.getElementById('accept-call-btn').onclick = async () => {
+        stopRingtone();
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            incomingCall.answer(localStream);
+            statusText.textContent = "In Call...";
+
+            actionsContainer.innerHTML = `
+                <button class="hangup-btn" onclick="endCall()" style="margin:0;"><i class="fas fa-phone-slash"></i></button>
+            `;
+
+            handleCallConnection(incomingCall);
+        } catch (err) {
+            console.error('Mic access error:', err);
+            alert("Could not access microphone.");
+            incomingCall.close();
+            overlay.style.display = 'none';
+        }
+    };
+
+    // If caller cancels
+    incomingCall.on('close', () => {
+        stopRingtone();
+        overlay.style.display = 'none';
+    });
+}
+
+function declineCall(callerId) {
+    stopRingtone();
+    if (currentCall) currentCall.close();
+    document.getElementById('call-overlay').style.display = 'none';
+}
+
 async function startCall(otherId, name) {
     if (!peer) await initPeer();
 
     try {
         localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         showCallOverlay(`Reaching ${name}...`);
+        document.getElementById('call-actions-container').innerHTML = `
+            <button class="hangup-btn" onclick="endCall()" style="margin:0;"><i class="fas fa-phone-slash"></i></button>
+        `;
 
         // Timer to switch to "Ringing" if no error occurs quickly
         setTimeout(() => {
@@ -594,9 +689,10 @@ function startCallTimer() {
 }
 
 function endCall() {
+    stopRingtone();
     // If we hang up BEFORE connecting (no callStartTime), send a missed call notification
     if (!callStartTime && activeConversationId) {
-        sendMessage("📞 Missed Call");
+        sendMessage(`📞 Missed Call`);
     }
 
     if (currentCall) currentCall.close();
@@ -791,15 +887,7 @@ function createMessagesModal() {
             <span onclick="handleReactionSelect('🔥')">🔥</span>
         </div>
         
-        <!-- Call Overlay -->
-        <div id="call-overlay" class="call-overlay">
-            <div class="call-content">
-                <div class="call-avatar-large"><i class="fas fa-user"></i></div>
-                <h2 id="call-status-text">Calling...</h2>
-                <div id="call-duration-timer" class="call-timer">0:00</div>
-                <button class="hangup-btn" onclick="endCall()"><i class="fas fa-phone-slash"></i></button>
-            </div>
-        </div>
+        <!-- Call Overlay moved to ensureCallUIInjected() -->
     </div>
     <style>
         #messages-modal {
