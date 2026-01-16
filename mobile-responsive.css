@@ -17,20 +17,13 @@ html {
 body {
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    position: relative;
-    width: 100%;
 }
 
-/* Prevent layout shifts */
-* {
-    max-width: 100%;
-}
-
+/* Responsive images and media ONLY */
 img,
 video {
     max-width: 100%;
     height: auto;
-    display: block;
 }
 
 /* ===================================
@@ -138,26 +131,28 @@ video {
 
     /* Main Content - Full Width */
     .main-content {
-        margin-left: 0;
-        padding: 80px 20px 100px 20px;
+        margin-left: 0 !important;
+        padding: 80px 20px 100px 20px !important;
         width: 100%;
     }
 
     .main-content.expanded {
-        margin-left: 0;
+        margin-left: 0 !important;
     }
 
     /* Header Adjustments */
     .site-header {
         padding: 12px 20px;
+        position: relative;
+        z-index: 100;
     }
 
     .desktop-nav {
-        display: none;
+        display: none !important;
     }
 
     .mobile-nav {
-        display: flex;
+        display: flex !important;
         flex-wrap: wrap;
         gap: 12px;
         justify-content: center;
@@ -219,12 +214,14 @@ video {
 
     /* Grid to Stack Conversion */
     .product-grid {
+        display: grid !important;
         grid-template-columns: 1fr !important;
         gap: 20px;
         padding: 0;
     }
 
     .lookbook-grid {
+        display: grid !important;
         grid-template-columns: 1fr !important;
         height: auto;
         gap: 16px;
@@ -232,39 +229,50 @@ video {
 
     .lookbook-main {
         height: 300px;
+        width: 100%;
     }
 
     .lookbook-side {
-        display: grid;
-        grid-template-columns: 1fr;
+        display: grid !important;
+        grid-template-columns: 1fr !important;
         gap: 16px;
     }
 
     .lookbook-side-top,
     .lookbook-side-bottom {
         height: 250px;
+        width: 100%;
     }
 
     .hero-features,
     .sell-options-grid,
     .benefits-grid {
+        display: grid !important;
         grid-template-columns: 1fr !important;
         gap: 16px;
     }
 
     /* Home Aesthetic Grid */
     .home-aesthetic-grid {
+        display: grid !important;
         grid-template-columns: 1fr !important;
         gap: 16px;
     }
 
     .home-aesthetic-section {
-        flex-direction: column;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    .aesthetic-text-block {
+        width: 100%;
+        margin-bottom: 20px;
     }
 
     /* Product Categories - Horizontal Scroll */
     .product-categories {
-        flex-wrap: nowrap;
+        display: flex !important;
+        flex-wrap: nowrap !important;
         overflow-x: auto;
         overflow-y: hidden;
         gap: 16px;
@@ -288,7 +296,8 @@ video {
 
     /* Hero Actions - Stack Vertically */
     .hero-actions {
-        flex-direction: column;
+        display: flex !important;
+        flex-direction: column !important;
         width: 100%;
         gap: 12px;
     }
@@ -330,14 +339,17 @@ video {
     /* Product Card Optimization */
     .product-card {
         margin-bottom: 20px;
+        width: 100%;
     }
 
     .product-image-container {
         height: 300px;
+        width: 100%;
     }
 
     .product-actions {
-        flex-direction: column;
+        display: flex !important;
+        flex-direction: column !important;
         gap: 8px;
     }
 
@@ -347,8 +359,9 @@ video {
 
     /* Form Optimization */
     .form-options {
-        flex-direction: column;
-        align-items: flex-start;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
         gap: 12px;
     }
 
@@ -366,12 +379,14 @@ video {
     .hero-banner-container {
         margin: 0 -20px;
         border-radius: 0;
+        width: calc(100% + 40px);
     }
 
     .welcome-video-container {
         height: 250px;
         margin: 0 -20px;
         border-radius: 0;
+        width: calc(100% + 40px);
     }
 
     /* Lookbook Overlay Text */
@@ -390,23 +405,23 @@ video {
 
     /* Remove Hover Effects on Touch Devices */
     .nav-link:hover {
-        transform: none;
+        transform: none !important;
     }
 
     .product-card:hover {
-        transform: none;
+        transform: none !important;
     }
 
     .feature-card:hover {
-        transform: none;
+        transform: none !important;
     }
 
     .sell-card:hover {
-        transform: none;
+        transform: none !important;
     }
 
     .lookbook-item:hover img {
-        transform: none;
+        transform: none !important;
     }
 
     /* Cart Icon Mobile Position */
@@ -435,6 +450,26 @@ video {
         max-width: 100%;
         max-height: 100vh;
         border-radius: 0;
+    }
+
+    /* Fix Header Overlap */
+    .header {
+        position: relative;
+        z-index: 10;
+        clear: both;
+    }
+
+    /* Ensure proper stacking context */
+    .content-section {
+        position: relative;
+        z-index: 1;
+        clear: both;
+    }
+
+    /* Fix brand positioning */
+    .brand {
+        position: relative;
+        z-index: 101;
     }
 }
 
@@ -473,7 +508,7 @@ video {
     .feature-card:hover,
     .sell-card:hover,
     .lookbook-item:hover img {
-        transform: none;
+        transform: none !important;
         box-shadow: none;
     }
 
@@ -519,19 +554,16 @@ video {
    =================================== */
 
 @supports (padding: max(0px)) {
-    body {
-        padding-left: max(0px, env(safe-area-inset-left));
-        padding-right: max(0px, env(safe-area-inset-right));
-    }
-
     .site-header {
         padding-left: max(20px, env(safe-area-inset-left));
         padding-right: max(20px, env(safe-area-inset-right));
     }
 
-    .main-content {
-        padding-left: max(20px, env(safe-area-inset-left));
-        padding-right: max(20px, env(safe-area-inset-right));
+    @media (max-width: 767px) {
+        .main-content {
+            padding-left: max(20px, env(safe-area-inset-left)) !important;
+            padding-right: max(20px, env(safe-area-inset-right)) !important;
+        }
     }
 }
 
