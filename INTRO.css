@@ -692,7 +692,7 @@ p {
     border-radius: var(--radius-lg);
     overflow: hidden;
     box-shadow: var(--shadow-lg);
-    height: 250px;
+    height: 350px;
 }
 
 .welcome-video {
