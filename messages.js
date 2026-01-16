@@ -543,20 +543,25 @@ function createMessagesModal() {
             font-family: 'Inter', sans-serif;
             border: 1px solid var(--msg-border);
             box-shadow: 0 25px 50px -12px var(--msg-shadow);
-            max-height: 80vh; 
+            width: 850px;
+            height: 650px;
+            max-width: 95vw;
+            max-height: 90vh;
             display: flex; 
             flex-direction: column;
             transition: background 0.4s, color 0.3s;
             position: relative;
+            overflow: hidden;
+            border-radius: 12px;
         }
 
         /* --- EXPANDED CHAT AESTHETIC --- */
         #chat-view {
-            position: absolute;
-            inset: 0;
-            background: var(--msg-chat-bg) no-repeat center center / cover;
             display: none; 
             flex-direction: column;
+            height: 100%;
+            flex: 1;
+            position: relative;
             z-index: 10;
         }
 
