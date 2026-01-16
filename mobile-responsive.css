@@ -1,0 +1,587 @@
+/* ===================================
+   MOBILE-FIRST RESPONSIVE OPTIMIZATIONS
+   CHASED E-Commerce - Pixel Perfect Mobile Experience
+   =================================== */
+
+/* ===================================
+   1. MOBILE-FIRST BASE OVERRIDES
+   =================================== */
+
+/* Ensure no horizontal overflow */
+html {
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+}
+
+body {
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+    width: 100%;
+}
+
+/* Prevent layout shifts */
+* {
+    max-width: 100%;
+}
+
+img,
+video {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ===================================
+   2. MOBILE NAVIGATION - HAMBURGER MENU
+   =================================== */
+
+/* Hamburger Menu Button */
+.hamburger-menu {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 10001;
+    width: 48px;
+    height: 48px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid var(--color-cta, #FFFFFF);
+    border-radius: 8px;
+    cursor: pointer;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.hamburger-menu:active {
+    transform: scale(0.95);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.hamburger-menu span {
+    display: block;
+    width: 24px;
+    height: 3px;
+    background: var(--color-cta, #FFFFFF);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.hamburger-menu.active span:nth-child(1) {
+    transform: rotate(45deg) translate(6px, 6px);
+}
+
+.hamburger-menu.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger-menu.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(6px, -6px);
+}
+
+/* Mobile Overlay for Sidebar */
+.mobile-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 9998;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mobile-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+/* ===================================
+   3. RESPONSIVE BREAKPOINTS
+   =================================== */
+
+/* Mobile Devices (< 768px) */
+@media (max-width: 767px) {
+
+    /* Show Hamburger Menu */
+    .hamburger-menu {
+        display: flex;
+    }
+
+    /* Hide Pop Button */
+    .pop-button {
+        display: none;
+    }
+
+    /* Sidebar Mobile Behavior */
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 280px;
+        height: 100vh;
+        transform: translateX(-100%);
+        z-index: 9999;
+        transition: transform 0.3s ease;
+    }
+
+    .sidebar.mobile-active {
+        transform: translateX(0);
+    }
+
+    /* Main Content - Full Width */
+    .main-content {
+        margin-left: 0;
+        padding: 80px 20px 100px 20px;
+        width: 100%;
+    }
+
+    .main-content.expanded {
+        margin-left: 0;
+    }
+
+    /* Header Adjustments */
+    .site-header {
+        padding: 12px 20px;
+    }
+
+    .desktop-nav {
+        display: none;
+    }
+
+    .mobile-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .mobile-nav-link {
+        font-size: 0.75rem;
+        padding: 8px 12px;
+        min-height: 36px;
+    }
+
+    /* Typography Scaling */
+    .hero-title {
+        font-size: 2rem !important;
+        line-height: 1.2;
+    }
+
+    .header-title {
+        font-size: 1.75rem !important;
+        padding: 20px 0;
+    }
+
+    .hero-subtitle {
+        font-size: 1.125rem !important;
+    }
+
+    .header-subtitle {
+        font-size: 1rem !important;
+    }
+
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    h2 {
+        font-size: 1.25rem;
+    }
+
+    h3 {
+        font-size: 1.125rem;
+    }
+
+    p {
+        font-size: 16px;
+        /* Prevent auto-zoom */
+    }
+
+    /* Container Fluidity */
+    .profile-container,
+    .sell-dashboard,
+    .home-hero {
+        max-width: 100%;
+        padding: 20px;
+    }
+
+    .profile-container.wide-profile {
+        max-width: 100%;
+    }
+
+    /* Grid to Stack Conversion */
+    .product-grid {
+        grid-template-columns: 1fr !important;
+        gap: 20px;
+        padding: 0;
+    }
+
+    .lookbook-grid {
+        grid-template-columns: 1fr !important;
+        height: auto;
+        gap: 16px;
+    }
+
+    .lookbook-main {
+        height: 300px;
+    }
+
+    .lookbook-side {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .lookbook-side-top,
+    .lookbook-side-bottom {
+        height: 250px;
+    }
+
+    .hero-features,
+    .sell-options-grid,
+    .benefits-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px;
+    }
+
+    /* Home Aesthetic Grid */
+    .home-aesthetic-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px;
+    }
+
+    .home-aesthetic-section {
+        flex-direction: column;
+    }
+
+    /* Product Categories - Horizontal Scroll */
+    .product-categories {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        gap: 16px;
+        padding: 0 20px 16px 20px;
+        margin: 0 -20px 24px -20px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .product-categories::-webkit-scrollbar {
+        display: none;
+    }
+
+    .category-tab {
+        flex-shrink: 0;
+        white-space: nowrap;
+        font-size: 0.875rem;
+        padding: 10px 16px;
+        min-height: 40px;
+    }
+
+    /* Hero Actions - Stack Vertically */
+    .hero-actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 12px;
+    }
+
+    .hero-btn {
+        width: 100%;
+        padding: 14px 24px;
+        font-size: 1rem;
+    }
+
+    /* Touch Targets - Minimum 48px */
+    .btn,
+    .btn-primary,
+    .btn-secondary,
+    .nav-link,
+    .auth-tab,
+    button {
+        min-height: 48px;
+        padding: 12px 24px;
+        font-size: 16px;
+        /* Prevent zoom on focus */
+    }
+
+    .form-input,
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="tel"],
+    input[type="date"],
+    select,
+    textarea {
+        min-height: 48px;
+        font-size: 16px;
+        /* Prevent auto-zoom */
+        padding: 12px 16px;
+    }
+
+    /* Product Card Optimization */
+    .product-card {
+        margin-bottom: 20px;
+    }
+
+    .product-image-container {
+        height: 300px;
+    }
+
+    .product-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .product-actions .btn {
+        width: 100%;
+    }
+
+    /* Form Optimization */
+    .form-options {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .auth-tabs {
+        gap: 8px;
+    }
+
+    .auth-tab {
+        font-size: 16px;
+        padding: 14px;
+    }
+
+    /* Video Container */
+    .home-hero-wide,
+    .hero-banner-container {
+        margin: 0 -20px;
+        border-radius: 0;
+    }
+
+    .welcome-video-container {
+        height: 250px;
+        margin: 0 -20px;
+        border-radius: 0;
+    }
+
+    /* Lookbook Overlay Text */
+    .lookbook-title {
+        font-size: 1.5rem !important;
+    }
+
+    .lookbook-overlay.mini .lookbook-title {
+        font-size: 1.125rem !important;
+    }
+
+    .lookbook-desc {
+        font-size: 0.875rem;
+        max-width: 100%;
+    }
+
+    /* Remove Hover Effects on Touch Devices */
+    .nav-link:hover {
+        transform: none;
+    }
+
+    .product-card:hover {
+        transform: none;
+    }
+
+    .feature-card:hover {
+        transform: none;
+    }
+
+    .sell-card:hover {
+        transform: none;
+    }
+
+    .lookbook-item:hover img {
+        transform: none;
+    }
+
+    /* Cart Icon Mobile Position */
+    .cart-icon-container {
+        bottom: 80px;
+        right: 20px;
+    }
+
+    .cart-button {
+        width: 56px;
+        height: 56px;
+    }
+
+    /* Modal Optimization */
+    .modal-content {
+        width: 95%;
+        max-width: 95%;
+        margin: 20px auto;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .messages-modal-content {
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+}
+
+/* Tablet Devices (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+
+    .main-content {
+        padding: 24px;
+    }
+
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .hero-features,
+    .sell-options-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .lookbook-grid {
+        grid-template-columns: 1fr 1fr;
+        height: 500px;
+    }
+}
+
+/* ===================================
+   4. TOUCH DEVICE OPTIMIZATIONS
+   =================================== */
+
+/* Remove hover effects on touch-only devices */
+@media (hover: none) and (pointer: coarse) {
+
+    .nav-link:hover,
+    .product-card:hover,
+    .feature-card:hover,
+    .sell-card:hover,
+    .lookbook-item:hover img {
+        transform: none;
+        box-shadow: none;
+    }
+
+    /* Add active/tap states instead */
+    .nav-link:active,
+    .btn:active,
+    .category-tab:active {
+        opacity: 0.8;
+        transform: scale(0.98);
+    }
+
+    .product-card:active {
+        opacity: 0.95;
+    }
+}
+
+/* ===================================
+   5. LANDSCAPE MOBILE OPTIMIZATION
+   =================================== */
+
+@media (max-width: 767px) and (orientation: landscape) {
+
+    .hero-title {
+        font-size: 1.75rem !important;
+    }
+
+    .lookbook-main {
+        height: 250px;
+    }
+
+    .lookbook-side-top,
+    .lookbook-side-bottom {
+        height: 200px;
+    }
+
+    .welcome-video-container {
+        height: 200px;
+    }
+}
+
+/* ===================================
+   6. SAFE AREA INSETS (iPhone Notch)
+   =================================== */
+
+@supports (padding: max(0px)) {
+    body {
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+    }
+
+    .site-header {
+        padding-left: max(20px, env(safe-area-inset-left));
+        padding-right: max(20px, env(safe-area-inset-right));
+    }
+
+    .main-content {
+        padding-left: max(20px, env(safe-area-inset-left));
+        padding-right: max(20px, env(safe-area-inset-right));
+    }
+}
+
+/* ===================================
+   7. PERFORMANCE OPTIMIZATIONS
+   =================================== */
+
+/* Reduce animations on low-end devices */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* GPU acceleration for smooth scrolling */
+.sidebar,
+.hamburger-menu,
+.mobile-overlay {
+    will-change: transform;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+}
+
+/* ===================================
+   8. UTILITY CLASSES
+   =================================== */
+
+.mobile-only {
+    display: none;
+}
+
+.desktop-only {
+    display: block;
+}
+
+@media (max-width: 767px) {
+    .mobile-only {
+        display: block;
+    }
+
+    .desktop-only {
+        display: none;
+    }
+
+    .mobile-flex {
+        display: flex !important;
+    }
+}

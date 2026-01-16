@@ -73,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initializeMobileCart();
     initializeHomeVideo();
+    initializeMobileMenu(); // Mobile hamburger menu
 
     // Check for existing session (Remember Me)
     restoreSession();
@@ -247,6 +248,63 @@ function initializeSidebar() {
                 icon.classList.add('fa-bars');
             }
         });
+    }
+}
+
+// ===================================
+// MOBILE HAMBURGER MENU
+// ===================================
+function initializeMobileMenu() {
+    const hamburger = document.getElementById('hamburger-menu');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobile-overlay');
+    const navLinks = sidebar ? sidebar.querySelectorAll('.nav-link') : [];
+
+    if (!hamburger || !sidebar || !overlay) return;
+
+    // Toggle menu on hamburger click
+    hamburger.addEventListener('click', () => {
+        const isActive = sidebar.classList.contains('mobile-active');
+
+        if (isActive) {
+            closeMobileMenu();
+        } else {
+            openMobileMenu();
+        }
+    });
+
+    // Close menu on overlay click
+    overlay.addEventListener('click', () => {
+        closeMobileMenu();
+    });
+
+    // Close menu when nav link is clicked
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            // Small delay to allow navigation to complete
+            setTimeout(() => closeMobileMenu(), 100);
+        });
+    });
+
+    // Close menu on escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && sidebar.classList.contains('mobile-active')) {
+            closeMobileMenu();
+        }
+    });
+
+    function openMobileMenu() {
+        sidebar.classList.add('mobile-active');
+        overlay.classList.add('active');
+        hamburger.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Prevent background scroll
+    }
+
+    function closeMobileMenu() {
+        sidebar.classList.remove('mobile-active');
+        overlay.classList.remove('active');
+        hamburger.classList.remove('active');
+        document.body.style.overflow = ''; // Restore scroll
     }
 }
 
