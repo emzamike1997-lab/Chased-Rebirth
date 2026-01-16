@@ -192,6 +192,9 @@ async function openChat(conversationId, title) {
     const chatView = document.getElementById('chat-view');
     chatView.style.display = 'flex';
 
+    // Full Screen Expansion
+    document.getElementById('messages-modal').classList.add('full-screen-chat');
+
     const msgContainer = document.getElementById('chat-messages');
     msgContainer.innerHTML = '<p class="loading-text">Loading...</p>';
 
@@ -444,6 +447,10 @@ function backToConversations() {
     document.getElementById('conversations-view').style.display = 'block';
     activeConversationId = null;
     if (currentSubscription) supabaseClient.removeChannel(currentSubscription);
+
+    // Remove Full Screen
+    document.getElementById('messages-modal').classList.remove('full-screen-chat');
+
     openMessagesDashboard();
 }
 
@@ -458,9 +465,7 @@ function createMessagesModal() {
                 <div class="modal-header">
                     <h2 class="modal-title">Messages</h2>
                     <div style="display:flex; gap:15px; align-items:center;">
-                        <button class="icon-btn theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode"><i class="fas fa-moon"></i></button>
-                        <button class="modal-close" onclick="document.getElementById('messages-modal').classList.remove('active')">&times;</button>
-                    </div>
+
                 </div>
                 <div id="conversation-list" class="conversation-list">
                     <!-- Items go here -->
@@ -540,7 +545,34 @@ function createMessagesModal() {
             max-height: 80vh; 
             display: flex; 
             flex-direction: column;
-            transition: background 0.3s, color 0.3s;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* --- FULL SCREEN CHAT OVERRIDE --- */
+        #messages-modal.full-screen-chat .messages-modal-content {
+            width: 100vw;
+            height: 100vh;
+            max-width: none;
+            max-height: none;
+            margin: 0;
+            border: none;
+            border-radius: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10001;
+        }
+
+        #messages-modal.full-screen-chat .chat-messages {
+            height: 100%;
+        }
+
+        #messages-modal.full-screen-chat .modal-header {
+            padding: 20px 30px;
+        }
+
+        #messages-modal.full-screen-chat .chat-input-area {
+            padding: 25px 30px;
         }
 
         .modal-header {
