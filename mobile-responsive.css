@@ -142,32 +142,37 @@ video {
         margin-left: 0 !important;
     }
 
-    /* Header Adjustments - FULL NAVIGATION VISIBLE */
+    /* Header Adjustments - SINGLE ROW HORIZONTAL LAYOUT */
     .site-header {
-        padding: 12px 15px !important;
+        padding: 10px 12px !important;
         position: relative;
         z-index: 100;
         display: flex !important;
         justify-content: space-between !important;
         align-items: center !important;
-        flex-wrap: wrap !important;
-        min-height: 60px !important;
+        flex-wrap: nowrap !important;
+        height: 50px !important;
+        overflow: visible !important;
     }
 
-    /* Brand stays on left */
+    /* Brand stays on left - compact */
     .brand {
         flex-shrink: 0;
-        order: 1;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
     }
 
     .brand-icon {
-        width: 32px !important;
-        height: 32px !important;
-        font-size: 1.125rem !important;
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 1rem !important;
     }
 
     .brand-name {
-        font-size: 1.125rem !important;
+        font-size: 1rem !important;
+        display: none !important;
+        /* Hide text on very small screens */
     }
 
     /* Hide desktop nav */
@@ -175,37 +180,54 @@ video {
         display: none !important;
     }
 
-    /* Show mobile nav - ALL ITEMS VISIBLE */
+    /* Show mobile nav - SINGLE ROW, NO WRAP */
     .mobile-nav {
         display: flex !important;
-        flex-wrap: wrap !important;
-        gap: 6px !important;
+        flex-wrap: nowrap !important;
+        gap: 4px !important;
         justify-content: flex-end !important;
         align-items: center !important;
-        order: 2;
         flex: 1;
-        margin-left: 10px !important;
+        margin-left: 8px !important;
+        overflow-x: auto !important;
+        scrollbar-width: none !important;
+    }
+
+    .mobile-nav::-webkit-scrollbar {
+        display: none !important;
     }
 
     .mobile-nav-link {
-        font-size: 0.65rem !important;
-        padding: 6px 8px !important;
-        min-height: 32px !important;
+        font-size: 0.6rem !important;
+        padding: 4px 6px !important;
+        min-height: 28px !important;
+        height: 28px !important;
         white-space: nowrap !important;
-        background: rgba(255, 255, 255, 0.1) !important;
+        background: rgba(255, 255, 255, 0.08) !important;
         border-radius: 4px !important;
+        flex-shrink: 0 !important;
+        line-height: 1.2 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
 
-    /* Mobile search - visible */
+    /* Mobile search - compact icon */
     .mobile-header-search {
         display: flex !important;
         align-items: center !important;
+        flex-shrink: 0 !important;
     }
 
     .mobile-search-icon {
-        font-size: 1.1rem !important;
-        padding: 8px !important;
+        font-size: 1rem !important;
+        padding: 6px !important;
         cursor: pointer !important;
+        width: 28px !important;
+        height: 28px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
 
     /* Typography Scaling */
