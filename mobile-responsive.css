@@ -361,18 +361,21 @@ video {
         min-height: 40px;
     }
 
-    /* Hero Actions - Stack Vertically */
+    /* Hero Actions - HORIZONTAL SIDE-BY-SIDE */
     .hero-actions {
         display: flex !important;
-        flex-direction: column !important;
+        flex-direction: row !important;
         width: 100%;
-        gap: 12px;
+        gap: 10px !important;
+        justify-content: center !important;
     }
 
     .hero-btn {
-        width: 100%;
-        padding: 14px 24px;
-        font-size: 1rem;
+        flex: 1 !important;
+        max-width: 48% !important;
+        padding: 12px 16px !important;
+        font-size: 0.875rem !important;
+        white-space: nowrap !important;
     }
 
     /* Touch Targets - Minimum 48px */
@@ -701,4 +704,5 @@ video {
     .mobile-flex {
         display: flex !important;
     }
+}
 }
