@@ -30,16 +30,17 @@ video {
    2. MOBILE NAVIGATION - HAMBURGER MENU
    =================================== */
 
-/* Hamburger Menu Button */
+/* Hamburger Menu Button - MOVED TO RIGHT SIDE */
 .hamburger-menu {
     display: none;
     position: fixed;
-    top: 20px;
-    left: 20px;
+    top: 15px;
+    right: 15px;
+    /* Changed from left to right */
     z-index: 10001;
     width: 48px;
     height: 48px;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.9);
     border: 2px solid var(--color-cta, #FFFFFF);
     border-radius: 8px;
     cursor: pointer;
@@ -49,6 +50,7 @@ video {
     gap: 5px;
     backdrop-filter: blur(10px);
     transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 .hamburger-menu:active {
@@ -110,7 +112,7 @@ video {
 
     /* Hide Pop Button */
     .pop-button {
-        display: none;
+        display: none !important;
     }
 
     /* Sidebar Mobile Behavior */
@@ -140,28 +142,63 @@ video {
         margin-left: 0 !important;
     }
 
-    /* Header Adjustments */
+    /* Header Adjustments - FIXED */
     .site-header {
-        padding: 12px 20px;
+        padding: 10px 15px !important;
         position: relative;
         z-index: 100;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        flex-wrap: nowrap !important;
     }
 
+    /* Brand stays on left */
+    .brand {
+        flex-shrink: 0;
+        margin-right: auto;
+    }
+
+    .brand-icon {
+        width: 35px !important;
+        height: 35px !important;
+        font-size: 1.25rem !important;
+    }
+
+    .brand-name {
+        font-size: 1.25rem !important;
+    }
+
+    /* Hide desktop nav */
     .desktop-nav {
         display: none !important;
     }
 
+    /* Show mobile nav - compact version */
     .mobile-nav {
         display: flex !important;
-        flex-wrap: wrap;
-        gap: 12px;
-        justify-content: center;
+        flex-wrap: nowrap !important;
+        gap: 8px !important;
+        justify-content: flex-end !important;
+        align-items: center !important;
+        margin-right: 60px;
+        /* Space for hamburger */
     }
 
     .mobile-nav-link {
-        font-size: 0.75rem;
-        padding: 8px 12px;
-        min-height: 36px;
+        font-size: 0.7rem !important;
+        padding: 6px 10px !important;
+        min-height: 32px !important;
+        white-space: nowrap !important;
+    }
+
+    /* Mobile search - icon only */
+    .mobile-search {
+        width: 36px !important;
+    }
+
+    .mobile-search-icon {
+        font-size: 1rem !important;
     }
 
     /* Typography Scaling */
