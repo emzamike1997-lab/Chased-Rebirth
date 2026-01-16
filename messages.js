@@ -192,6 +192,9 @@ async function openChat(conversationId, title) {
     const chatView = document.getElementById('chat-view');
     chatView.style.display = 'flex';
 
+    // Expand background to fill entire modal
+    document.getElementById('messages-modal').classList.add('chat-active');
+
     const msgContainer = document.getElementById('chat-messages');
     msgContainer.innerHTML = '<p class="loading-text">Loading...</p>';
 
@@ -444,6 +447,10 @@ function backToConversations() {
     document.getElementById('conversations-view').style.display = 'block';
     activeConversationId = null;
     if (currentSubscription) supabaseClient.removeChannel(currentSubscription);
+
+    // Revert background to normal list view aesthetic
+    document.getElementById('messages-modal').classList.remove('chat-active');
+
     openMessagesDashboard();
 }
 
@@ -540,7 +547,47 @@ function createMessagesModal() {
             max-height: 80vh; 
             display: flex; 
             flex-direction: column;
-            transition: background 0.3s, color 0.3s;
+            transition: background 0.4s, color 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- EXPANDED CHAT AESTHETIC --- */
+        #messages-modal.chat-active .messages-modal-content {
+            background: var(--msg-chat-bg) no-repeat center center / cover;
+        }
+
+        /* Unified overlay for the entire modal when chat is active */
+        #messages-modal.chat-active .messages-modal-content::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(to bottom, 
+                rgba(0,0,0,0.8) 0%, 
+                rgba(0,0,0,0.3) 50%, 
+                rgba(0,0,0,0.8) 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        #messages-modal.chat-active .chat-header,
+        #messages-modal.chat-active .chat-messages,
+        #messages-modal.chat-active .chat-input-area {
+            background: transparent;
+            z-index: 1;
+        }
+        
+        #messages-modal.chat-active .chat-messages::before {
+            display: none; /* Hide the old sub-overlay */
+        }
+
+        #messages-modal.chat-active .chat-input-area {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        #messages-modal.chat-active .chat-header {
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
         .modal-header {
