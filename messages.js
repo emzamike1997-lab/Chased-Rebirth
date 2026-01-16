@@ -61,8 +61,13 @@ async function renderConversationList(conversations, currentUserId) {
     conversations.forEach(conv => {
         const isBuyer = conv.buyer_id === currentUserId;
 
-        // Use stored names from conversation table
-        const displayName = isBuyer ? (conv.seller_name || "Seller") : (conv.buyer_name || "Buyer");
+        // Use stored names from conversation table, avoid generic placeholders if possible
+        let displayName = isBuyer ? conv.seller_name : conv.buyer_name;
+
+        // Fallback logic if name is missing or still a placeholder
+        if (!displayName || displayName === 'Buyer' || displayName === 'Seller') {
+            displayName = isBuyer ? "Seller" : "Buyer";
+        }
 
         const itemHTML = `
             <div class="conversation-item" onclick="openChat('${conv.id}', '${conv.item_title || 'Item Inquiry'}')">
@@ -203,7 +208,8 @@ async function openChat(conversationId, title) {
     const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
     const updateData = {};
 
-    if (user.id === convData.buyer_id && !convData.buyer_name) {
+    // Only update if current name is a missing or generic placeholder
+    if (user.id === convData.buyer_id && (!convData.buyer_name || convData.buyer_name === 'Buyer')) {
         updateData.buyer_name = userName;
     } else if (user.id === convData.seller_id && (!convData.seller_name || convData.seller_name === 'Seller')) {
         updateData.seller_name = userName;
@@ -308,8 +314,11 @@ function renderMessages(messages, currentUserId, buyerId, sellerId) {
         // Style: Buyer = Grey, Seller = Black
         const styleClass = isSenderBuyer ? 'message-style-buyer' : 'message-style-seller';
 
-        // Name Logic - Use stored names
-        const nameDisplay = activeParticipants[msg.sender_id] || (isSenderBuyer ? "Buyer" : "Seller");
+        // Name Logic - Use stored names, fallback to role if missing
+        let nameDisplay = activeParticipants[msg.sender_id];
+        if (!nameDisplay || nameDisplay === 'Buyer' || nameDisplay === 'Seller') {
+            nameDisplay = isSenderBuyer ? "Buyer" : "Seller";
+        }
 
         const msgHTML = `
             <div class="message-wrapper ${alignClass}">
