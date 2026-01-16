@@ -493,16 +493,16 @@ function createMessagesModal() {
         }
 
         #messages-modal.light-theme {
-            --msg-bg: #ffffff;
+            --msg-bg: url('assets/light_bg.jpg') no-repeat center center / cover;
             --msg-text: #000000;
             --msg-header-bg: #000000; /* Dark header in light mode */
             --msg-border: #e0e0e0;
-            --msg-item-hover: #f0f0f0;
-            --msg-input-bg: #ffffff;
-            --msg-input-field: #f5f5f5;
+            --msg-item-hover: rgba(0,0,0,0.05); /* Soften hover on image */
+            --msg-input-bg: rgba(255,255,255,0.9); /* Translucent input area */
+            --msg-input-field: rgba(255,255,255,0.8);
             --msg-input-text: #000;
-            --msg-text-sec: #666666;
-            --msg-btn-color: #ffffff; /* White buttons/text on dark header */
+            --msg-text-sec: #333333; /* Darker secondary text for contrast */
+            --msg-btn-color: #ffffff; 
             --msg-shadow: rgba(0,0,0,0.1);
         }
 
