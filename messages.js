@@ -544,12 +544,21 @@ function createMessagesModal() {
             font-family: 'Inter', sans-serif;
             border: 1px solid var(--msg-border);
             box-shadow: 0 25px 50px -12px var(--msg-shadow);
-            max-height: 80vh; 
+            width: 800px;
+            height: 600px;
+            max-width: 95vw;
+            max-height: 85vh;
             display: flex; 
             flex-direction: column;
-            transition: background 0.4s, color 0.3s;
+            transition: all 0.4s ease;
             position: relative;
             overflow: hidden;
+            border-radius: 12px;
+        }
+
+        /* Support for smaller screens */
+        @media (max-height: 700px) {
+            .messages-modal-content { height: 90vh; }
         }
 
         /* --- EXPANDED CHAT AESTHETIC --- */
@@ -577,7 +586,14 @@ function createMessagesModal() {
         }
         
         #messages-modal.chat-active .chat-messages::before {
-            display: none; /* Hide the old sub-overlay */
+            display: none; 
+        }
+
+        #chat-view {
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            flex: 1;
         }
 
         #messages-modal.chat-active .chat-input-area {
