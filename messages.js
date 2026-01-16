@@ -475,7 +475,7 @@ function createMessagesModal() {
             </div>
 
             <!-- VIEW 2: CHAT WINDOW -->
-            <div id="chat-view" style="display:none; flex-direction: column; height: 100%;">
+            <div id="chat-view">
                 <div class="modal-header chat-header">
                     <div style="display:flex; align-items:center;">
                         <button class="btn-icon back-btn" onclick="backToConversations()"><i class="fas fa-arrow-left"></i></button>
@@ -505,8 +505,7 @@ function createMessagesModal() {
             </div>
 
         </div>
-    </div>
-    <style>
+    </div><style>
         /* --- VARIABLES --- */
         #messages-modal {
             --msg-bg: #000;
@@ -549,16 +548,19 @@ function createMessagesModal() {
             flex-direction: column;
             transition: background 0.4s, color 0.3s;
             position: relative;
-            overflow: hidden;
         }
 
         /* --- EXPANDED CHAT AESTHETIC --- */
-        #messages-modal.chat-active .messages-modal-content {
+        #chat-view {
+            position: absolute;
+            inset: 0;
             background: var(--msg-chat-bg) no-repeat center center / cover;
+            display: none; 
+            flex-direction: column;
+            z-index: 10;
         }
 
-        /* Unified overlay for the entire modal when chat is active */
-        #messages-modal.chat-active .messages-modal-content::before {
+        #chat-view::before {
             content: '';
             position: absolute; inset: 0;
             background: linear-gradient(to bottom, 
@@ -569,25 +571,15 @@ function createMessagesModal() {
             z-index: 0;
         }
 
-        #messages-modal.chat-active .chat-header,
-        #messages-modal.chat-active .chat-messages,
-        #messages-modal.chat-active .chat-input-area {
-            background: transparent;
+        .chat-header, .chat-messages, .chat-input-area {
+            background: transparent !important;
             z-index: 1;
         }
-        
-        #messages-modal.chat-active .chat-messages::before {
-            display: none; /* Hide the old sub-overlay */
-        }
 
-        #messages-modal.chat-active .chat-input-area {
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+        .chat-input-area {
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             border-top: 1px solid rgba(255,255,255,0.1);
-        }
-
-        #messages-modal.chat-active .chat-header {
-            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
         .modal-header {
@@ -662,6 +654,7 @@ function createMessagesModal() {
             background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.7) 100%);
             pointer-events: none;
             z-index: 0;
+            display: none; /* Hidden by default, handled by parent overlay when expanded */
         }
 
         .chat-messages::-webkit-scrollbar { width: 6px; }
