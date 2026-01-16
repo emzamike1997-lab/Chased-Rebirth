@@ -482,12 +482,26 @@ async function initPeer() {
 
     console.log('Initializing peer connection for user:', user.id);
     ensureCallUIInjected();
-    peer = new Peer(user.id, {
+
+    // ICE Servers for global connectivity bypassing NAT/Firewalls
+    const config = {
         host: '0.peerjs.com',
         port: 443,
         secure: true,
-        debug: 1
-    });
+        debug: 1,
+        config: {
+            'iceServers': [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' },
+                { urls: 'stun:stun3.l.google.com:19302' },
+                { urls: 'stun:stun4.l.google.com:19302' }
+            ],
+            'sdpSemantics': 'unified-plan'
+        }
+    };
+
+    peer = new Peer(user.id, config);
 
     peer.on('open', (id) => {
         console.log('✅ Peer connected! Ready to receive calls. ID:', id);
