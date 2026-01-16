@@ -394,10 +394,8 @@ let timerInterval;
 
 async function toggleRecording() {
     const btn = document.getElementById('voice-rec-btn');
-    const input = document.getElementById('chat-input');
+    const recordingStatus = document.getElementById('recording-status');
     const timerDisplay = document.getElementById('recording-timer');
-    const waves = document.getElementById('recording-waves');
-    const inputContainer = document.querySelector('.input-container'); // Get the new input container
 
     if (!isRecording) {
         try {
@@ -426,9 +424,7 @@ async function toggleRecording() {
             mediaRecorder.start();
             isRecording = true;
             btn.classList.add('recording');
-            inputContainer.style.display = 'none'; // Hide the input container
-            timerDisplay.style.display = 'block';
-            waves.style.display = 'flex';
+            recordingStatus.style.display = 'flex';
 
             timerInterval = setInterval(() => {
                 const elapsed = Math.round((Date.now() - recordingStartTime) / 1000);
@@ -441,16 +437,16 @@ async function toggleRecording() {
             alert("Mic access denied.");
         }
     } else {
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+        }
         isRecording = false;
         clearInterval(timerInterval);
         btn.classList.remove('recording');
-        inputContainer.style.display = 'flex'; // Show the input container
-        timerDisplay.style.display = 'none';
+        recordingStatus.style.display = 'none';
         timerDisplay.textContent = '0:00';
-        waves.style.display = 'none';
-        input.placeholder = "Type a message...";
     }
+    input.placeholder = "Type a message...";
 }
 
 async function handleFileSelect(event) {
@@ -696,29 +692,28 @@ function createMessagesModal() {
                     </div>
                 </div>
                 <div id="chat-messages" class="chat-messages"></div>
-                <div id="reply-bar" class="reply-bar">
-                    <span id="reply-text">Replying...</span>
-                    <button onclick="hideReplyUI()"><i class="fas fa-times"></i></button>
-                </div>
                 <div class="chat-input-area">
                     <button class="btn-icon emoji-btn" onclick="toggleEmojiPicker()"><i class="far fa-smile"></i></button>
                     <button class="btn-icon attach-btn" id="attach-btn" onclick="document.getElementById('file-input').click()"><i class="fas fa-plus"></i></button>
                     <input type="file" id="file-input" style="display:none" accept="image/*" onchange="handleFileSelect(event)">
-                    <div class="input-container">
-                        <div id="reply-bar" class="reply-bar">
+                    
+                    <div class="input-container" style="flex: 1; position: relative; background: var(--msg-input-field); border-radius: 20px; border: 1px solid var(--msg-border); overflow: hidden; display: flex; flex-direction: column;">
+                        <div id="reply-bar" class="reply-bar" style="border-bottom: 1px solid var(--msg-border);">
                             <div class="reply-content">
-                                <span id="reply-text">Replying...</span>
+                                <span id="reply-text" style="font-size: 0.75rem; opacity: 0.8;">Replying...</span>
                             </div>
-                            <button class="close-reply" onclick="hideReplyUI()">&times;</button>
+                            <button class="close-reply" onclick="hideReplyUI()" style="background:none; border:none; color:#fff; cursor:pointer;">&times;</button>
                         </div>
-                        <input type="text" id="chat-input" placeholder="Type a message..." autocomplete="off">
-                    </div>
-                    <div id="recording-status" style="flex: 1; display: flex; align-items: center; gap: 10px;">
-                        <div id="recording-timer" style="display:none; color: #ff4b2b; font-weight: bold; font-family: monospace;">0:00</div>
-                        <div id="recording-waves" class="voice-waves" style="display:none;">
-                            <span></span><span></span><span></span><span></span><span></span>
+                        <input type="text" id="chat-input" placeholder="Type a message..." autocomplete="off" style="width: 100%; border: none; background: transparent; padding: 10px 15px; outline: none; color: var(--msg-input-text);">
+                        
+                        <div id="recording-status" style="position: absolute; inset: 0; background: var(--msg-input-field); display: none; align-items: center; padding: 0 15px; gap: 10px; z-index: 5;">
+                            <div id="recording-timer" style="color: #ff4b2b; font-weight: bold; font-family: monospace;">0:00</div>
+                            <div id="recording-waves" class="voice-waves" style="flex: 1;">
+                                <span></span><span></span><span></span><span></span><span></span>
+                            </div>
                         </div>
                     </div>
+
                     <button class="voice-rec-btn" id="voice-rec-btn" onclick="toggleRecording()"><i class="fas fa-microphone"></i></button>
                     <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
                 </div>
@@ -801,16 +796,17 @@ function createMessagesModal() {
         .conversation-item:hover { background: var(--msg-item-hover); }
         .conv-avatar { width: 48px; height: 48px; background: #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; }
         .small-avatar { width: 30px; height: 30px; margin-right: 10px; }
-        .chat-messages { flex: 1; overflow-y: auto; padding: 15px; background: var(--msg-chat-bg) no-repeat center center / cover; display: flex; flex-direction: column; position: relative; }
+        .chat-messages { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 15px; background: var(--msg-chat-bg) no-repeat center center / cover; display: flex; flex-direction: column; position: relative; }
         .chat-messages::before { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.4); z-index: 0; pointer-events: none; }
-        .message-wrapper { margin-bottom: 15px; display: flex; flex-direction: column; max-width: 80%; z-index: 1; }
+        .message-wrapper { margin-bottom: 15px; display: flex; flex-direction: column; max-width: 85%; z-index: 1; width: fit-content; }
         .message-align-right { align-self: flex-end; align-items: flex-end; }
         .message-align-left { align-self: flex-start; align-items: flex-start; }
-        .message { padding: 12px 18px; border-radius: 15px; backdrop-filter: blur(10px); color: #fff; }
+        .message { padding: 10px 16px; border-radius: 18px; backdrop-filter: blur(10px); color: #fff; position: relative; }
         .message-style-buyer { background: rgba(100,100,100,0.7); border-bottom-left-radius: 2px; }
         .message-style-seller { background: rgba(0,0,0,0.8); border-bottom-right-radius: 2px; }
-        .chat-input-area { background: var(--msg-input-bg); padding: 15px; display: flex; gap: 10px; align-items: center; backdrop-filter: blur(15px); }
-        #chat-input { flex: 1; padding: 10px 15px; border-radius: 20px; background: var(--msg-input-field); border: 1px solid var(--msg-border); color: var(--msg-input-text); }
+        .chat-input-area { background: var(--msg-input-bg); padding: 12px 15px; display: flex; gap: 12px; align-items: center; backdrop-filter: blur(15px); }
+        .input-container { flex: 1; }
+        #chat-input { width: 100%; }
         .attach-btn, .voice-rec-btn, .send-btn { width: 38px; height: 38px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; }
         .attach-btn, .voice-rec-btn { background: rgba(255,255,255,0.1); }
         .send-btn { background: var(--color-cta); }
