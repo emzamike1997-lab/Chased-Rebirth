@@ -522,9 +522,24 @@ function handleCallConnection(call) {
     currentCall = call;
 
     call.on('stream', (remoteStream) => {
-        const audio = new Audio();
-        audio.srcObject = remoteStream;
-        audio.play();
+        // Create audio element for remote stream
+        let remoteAudio = document.getElementById('remote-call-audio');
+        if (!remoteAudio) {
+            remoteAudio = document.createElement('audio');
+            remoteAudio.id = 'remote-call-audio';
+            remoteAudio.autoplay = true;
+            remoteAudio.style.display = 'none';
+            document.body.appendChild(remoteAudio);
+        }
+
+        remoteAudio.srcObject = remoteStream;
+
+        // Ensure audio plays (handle autoplay restrictions)
+        remoteAudio.play().catch(err => {
+            console.error('Error playing remote audio:', err);
+            // Try playing again after user interaction
+            setTimeout(() => remoteAudio.play().catch(e => console.error('Retry failed:', e)), 500);
+        });
 
         document.getElementById('call-status-text').textContent = "Connected";
         startCallTimer();
@@ -561,6 +576,16 @@ function endCall() {
 
     if (currentCall) currentCall.close();
     if (localStream) localStream.getTracks().forEach(t => t.stop());
+
+    // Clean up remote audio element
+    const remoteAudio = document.getElementById('remote-call-audio');
+    if (remoteAudio) {
+        if (remoteAudio.srcObject) {
+            remoteAudio.srcObject.getTracks().forEach(t => t.stop());
+        }
+        remoteAudio.srcObject = null;
+        remoteAudio.remove();
+    }
 
     clearInterval(callTimerInterval);
     const overlay = document.getElementById('call-overlay');
