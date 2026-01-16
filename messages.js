@@ -470,8 +470,8 @@ async function initPeer() {
     peer.on('error', (err) => {
         console.error('Peer error:', err);
         if (err.type === 'peer-unavailable') {
-            alert("User is currently offline and cannot be reached.");
-            endCall();
+            // Silently handle offline/unavailable state to keep "Reaching..." UI active
+            console.log("Peer unavailable. Maintaining 'Reaching...' state.");
         }
     });
 }
@@ -481,7 +481,15 @@ async function startCall(otherId, name) {
 
     try {
         localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        showCallOverlay(`Calling ${name}...`);
+        showCallOverlay(`Reaching ${name}...`);
+
+        // Timer to switch to "Ringing" if no error occurs quickly
+        setTimeout(() => {
+            const statusElem = document.getElementById('call-status-text');
+            if (statusElem && statusElem.textContent.startsWith('Reaching') && !currentCall?.open) {
+                statusElem.textContent = `Ringing ${name}...`;
+            }
+        }, 3000);
 
         currentCall = peer.call(otherId, localStream);
         handleCallConnection(currentCall);
@@ -526,16 +534,23 @@ function startCallTimer() {
 }
 
 function endCall() {
+    // If we hang up BEFORE connecting (no callStartTime), send a missed call notification
+    if (!callStartTime && activeConversationId) {
+        sendMessage("📞 Missed Call");
+    }
+
     if (currentCall) currentCall.close();
     if (localStream) localStream.getTracks().forEach(t => t.stop());
 
     clearInterval(callTimerInterval);
     const overlay = document.getElementById('call-overlay');
-    overlay.style.display = 'none';
-    document.getElementById('call-duration-timer').textContent = "0:00";
+    if (overlay) overlay.style.display = 'none';
+    const timerElem = document.getElementById('call-duration-timer');
+    if (timerElem) timerElem.textContent = "0:00";
 
     currentCall = null;
     localStream = null;
+    callStartTime = null;
 }
 
 // 7. Helpers
