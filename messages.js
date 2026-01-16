@@ -494,14 +494,14 @@ function createMessagesModal() {
 
         #messages-modal.light-theme {
             --msg-bg: url('assets/light_bg.jpg') no-repeat center center / cover;
-            --msg-text: #2c1810; /* Dark brown for text */
+            --msg-text: #ffffff; /* White text */
             --msg-header-bg: #1a0f08; /* Very dark brown/black for header */
             --msg-border: #d4a574; /* Warm tan border */
             --msg-item-hover: rgba(255, 200, 150, 0.15); /* Warm peachy hover */
             --msg-input-bg: rgba(255, 235, 215, 0.85); /* Warm cream input area */
             --msg-input-field: rgba(255, 245, 230, 0.9); /* Light peachy input */
-            --msg-input-text: #2c1810; /* Dark brown text */
-            --msg-text-sec: #6b4423; /* Medium brown for secondary text */
+            --msg-input-text: #2c1810; /* Dark brown text for input fields */
+            --msg-text-sec: #f5e6d3; /* Light cream for secondary text */
             --msg-btn-color: #ffd4a3; /* Warm peach for buttons on dark header */
             --msg-shadow: rgba(0,0,0,0.2);
         }
