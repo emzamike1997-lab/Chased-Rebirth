@@ -495,14 +495,14 @@ function createMessagesModal() {
         #messages-modal.light-theme {
             --msg-bg: #ffffff;
             --msg-text: #000000;
-            --msg-header-bg: #f8f8f8;
+            --msg-header-bg: #000000; /* Dark header in light mode */
             --msg-border: #e0e0e0;
             --msg-item-hover: #f0f0f0;
             --msg-input-bg: #ffffff;
             --msg-input-field: #f5f5f5;
             --msg-input-text: #000;
             --msg-text-sec: #666666;
-            --msg-btn-color: #333;
+            --msg-btn-color: #ffffff; /* White buttons/text on dark header */
             --msg-shadow: rgba(0,0,0,0.1);
         }
 
@@ -520,12 +520,13 @@ function createMessagesModal() {
 
         .modal-header {
             background: var(--msg-header-bg);
-            border-bottom: 1px solid var(--msg-border);
+            color: var(--msg-btn-color); /* Ensure text/title inherits this white/dark appropriately or set explicitly */
+            border-bottom: 1px solid rgba(255,255,255,0.1); /* Keep distinct separator if header is dark */
             padding: 15px 20px;
             display: flex; justify-content: space-between; align-items: center;
             transition: background 0.3s;
         }
-        .modal-title { margin: 0; }
+        .modal-title { margin: 0; color: inherit; } /* Inherit color from header (White in both cases now) */
         .modal-close, .back-btn, .icon-btn { 
             background: none; border: none; 
             color: var(--msg-btn-color); 
