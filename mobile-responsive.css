@@ -441,21 +441,37 @@ video {
         padding: 14px;
     }
 
-    /* Video Container - CENTERED WITH MARGINS */
+    /* Video Container - CENTERED HORIZONTAL RECTANGLE */
     .home-hero-wide,
     .hero-banner-container {
         margin: 0 20px !important;
         border-radius: 12px !important;
         width: calc(100% - 40px) !important;
+        height: 200px !important;
         overflow: hidden !important;
+        position: relative !important;
+    }
+
+    .home-hero-wide video,
+    .hero-banner-container video {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
     }
 
     .welcome-video-container {
-        height: 250px;
+        height: 200px !important;
         margin: 0 20px !important;
         border-radius: 12px !important;
         width: calc(100% - 40px) !important;
         overflow: hidden !important;
+        position: relative !important;
+    }
+
+    .welcome-video-container video {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
     }
 
     /* Lookbook Overlay Text */
