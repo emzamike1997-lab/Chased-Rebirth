@@ -4,11 +4,10 @@
 
 let currentSubscription = null;
 let activeConversationId = null;
-let activeReplyId = null; // Track message quoting
-let activeConversationRole = null; // 'buyer' or 'seller' relative to ME
-let activeParticipants = {}; // { id: name }
+let activeReplyId = null;
+let activeParticipants = {};
 
-// 1. Open Messages Dashboard (List of Conversations)
+// 1. Open Messages Dashboard
 async function openMessagesDashboard() {
     const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) {
@@ -16,21 +15,17 @@ async function openMessagesDashboard() {
         return;
     }
 
-    // Create Modal if not exists
     let msgModal = document.getElementById('messages-modal');
     if (!msgModal) {
         createMessagesModal();
         msgModal = document.getElementById('messages-modal');
     }
 
-    // Load Conversations
     const convList = document.getElementById('conversation-list');
     convList.innerHTML = '<p class="loading-text">Loading chats...</p>';
     msgModal.classList.add('active');
 
     try {
-        // Fetch conversations and expand user details if possible (manually for now as names aren't foreign keyed easily without profile table or metadata)
-        // We stored seller_name on items, but for general chats we rely on metadata fetch.
         const { data: conversations, error } = await supabaseClient
             .from('conversations')
             .select('*')
@@ -38,9 +33,7 @@ async function openMessagesDashboard() {
             .order('updated_at', { ascending: false });
 
         if (error) throw error;
-
         renderConversationList(conversations, user.id);
-
     } catch (err) {
         console.error("Error loading chats:", err);
         convList.innerHTML = '<p class="error-text">Failed to load messages.</p>';
@@ -57,14 +50,9 @@ async function renderConversationList(conversations, currentUserId) {
         return;
     }
 
-    // Display names stored in conversations table
     conversations.forEach(conv => {
         const isBuyer = conv.buyer_id === currentUserId;
-
-        // Use stored names from conversation table, avoid generic placeholders if possible
         let displayName = isBuyer ? conv.seller_name : conv.buyer_name;
-
-        // Fallback logic if name is missing or still a placeholder
         if (!displayName || displayName === 'Buyer' || displayName === 'Seller') {
             displayName = isBuyer ? "Seller" : "Buyer";
         }
@@ -83,12 +71,10 @@ async function renderConversationList(conversations, currentUserId) {
     });
 }
 
-// --- THEME LOGIC ---
+// 3. Theme Logic
 function toggleTheme() {
     const modal = document.getElementById('messages-modal');
     if (!modal) return;
-
-    // Toggle class
     const isLight = modal.classList.contains('light-theme');
     if (isLight) {
         modal.classList.remove('light-theme');
@@ -103,9 +89,7 @@ function toggleTheme() {
 function applyTheme() {
     const modal = document.getElementById('messages-modal');
     if (!modal) return;
-
-    const saved = localStorage.getItem('chased_msg_theme');
-    // Default to LIGHT if no preference (as per user request "wants messaging system to have white background")
+    const saved = localStorage.getItem('chased_msg_theme') || 'dark';
     if (saved === 'dark') {
         modal.classList.remove('light-theme');
     } else {
@@ -119,30 +103,25 @@ function updateToggleIcon() {
     const btn2 = document.getElementById('theme-toggle-btn-chat');
     const modal = document.getElementById('messages-modal');
     if (!modal) return;
-
     const isLight = modal.classList.contains('light-theme');
     const iconClass = isLight ? 'fa-moon' : 'fa-sun';
-
     if (btn) btn.innerHTML = `<i class="fas ${iconClass}"></i>`;
     if (btn2) btn2.innerHTML = `<i class="fas ${iconClass}"></i>`;
 }
-// -------------------
 
-// 3. Start Chat (New or Existing)
+// 4. Chat Management
 async function startChat(sellerId, itemId, itemTitle, sellerName) {
     const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) {
-        alert("Please login to message the seller.");
+        alert("Please login to message.");
         return;
     }
-
     if (user.id === sellerId) {
         alert("You cannot message yourself!");
         return;
     }
 
-    // Check for existing conversation
-    const { data: existing, error } = await supabaseClient
+    const { data: existing } = await supabaseClient
         .from('conversations')
         .select('id')
         .eq('buyer_id', user.id)
@@ -154,10 +133,8 @@ async function startChat(sellerId, itemId, itemTitle, sellerName) {
         openMessagesDashboard();
         setTimeout(() => openChat(existing.id, itemTitle), 500);
     } else {
-        // Get current user's name
         const buyerName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Buyer';
-
-        const { data: newConv, error: createError } = await supabaseClient
+        const { data: newConv, error } = await supabaseClient
             .from('conversations')
             .insert({
                 buyer_id: user.id,
@@ -167,38 +144,29 @@ async function startChat(sellerId, itemId, itemTitle, sellerName) {
                 buyer_name: buyerName,
                 seller_name: sellerName || 'Seller'
             })
-            .select()
-            .single();
+            .select().single();
 
-        if (createError) {
-            console.error(createError);
+        if (error) {
             alert("Failed to start chat.");
             return;
         }
-
         openMessagesDashboard();
         setTimeout(() => openChat(newConv.id, itemTitle), 500);
     }
 }
 
-// 4. Open Specific Chat Window
 async function openChat(conversationId, title) {
     activeConversationId = conversationId;
     activeReplyId = null;
     hideReplyUI();
 
-    // Switch View
     document.getElementById('conversations-view').style.display = 'none';
-    const chatView = document.getElementById('chat-view');
-    chatView.style.display = 'flex';
-
-    // Expand background to fill entire modal
+    document.getElementById('chat-view').style.display = 'flex';
     document.getElementById('messages-modal').classList.add('chat-active');
 
     const msgContainer = document.getElementById('chat-messages');
     msgContainer.innerHTML = '<p class="loading-text">Loading...</p>';
 
-    // Fetch conversation details to know roles
     const { data: convData } = await supabaseClient
         .from('conversations')
         .select('*')
@@ -207,65 +175,29 @@ async function openChat(conversationId, title) {
 
     const { data: { user } } = await supabaseClient.auth.getUser();
 
-    // Update conversation with current user's name if not already set (for older conversations)
-    const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
-    const updateData = {};
+    // Participant Names
+    let otherName = (user.id === convData.buyer_id) ? convData.seller_name : convData.buyer_name;
+    activeParticipants = {
+        [convData.buyer_id]: convData.buyer_name || "Buyer",
+        [convData.seller_id]: convData.seller_name || "Seller"
+    };
 
-    // Only update if current name is a missing or generic placeholder
-    if (user.id === convData.buyer_id && (!convData.buyer_name || convData.buyer_name === 'Buyer')) {
-        updateData.buyer_name = userName;
-    } else if (user.id === convData.seller_id && (!convData.seller_name || convData.seller_name === 'Seller')) {
-        updateData.seller_name = userName;
-    }
-
-    if (Object.keys(updateData).length > 0) {
-        await supabaseClient
-            .from('conversations')
-            .update(updateData)
-            .eq('id', conversationId);
-        Object.assign(convData, updateData);
-    }
-
-    // Resolve Participants using stored names
-    let otherName = "";
-    if (user.id === convData.buyer_id) {
-        activeConversationRole = 'buyer'; // I am the buyer
-        otherName = convData.seller_name || "Seller";
-        activeParticipants = { [convData.buyer_id]: "Me", [convData.seller_id]: otherName };
-    } else {
-        activeConversationRole = 'seller'; // I am the seller
-        otherName = convData.buyer_name || "Buyer";
-        activeParticipants = { [convData.seller_id]: "Me", [convData.buyer_id]: otherName };
-    }
-
-    // Update Header: Username as Title, Product Name as Subtitle (Fixed)
     document.getElementById('chat-title').innerHTML = `
         <div style="display:flex; flex-direction:column;">
-            <span style="font-size: 1.1rem; font-weight: 600;">${otherName}</span>
+            <span style="font-size: 1.1rem; font-weight: 600;">${otherName || 'User'}</span>
             <span id="chat-subtitle" style="font-size: 0.75rem; color: var(--msg-text-sec); font-weight: normal;">${convData.item_title || 'Item Inquiry'}</span>
         </div>
     `;
 
-    // Load History
-    const { data: messages, error } = await supabaseClient
+    const { data: messages } = await supabaseClient
         .from('messages')
         .select('*')
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
 
-    if (error) {
-        msgContainer.innerHTML = '<p>Error loading messages.</p>';
-        return;
-    }
-
     renderMessages(messages, user.id, convData.buyer_id, convData.seller_id);
-
-    // Subscribe
     subscribeToMessages(conversationId, user.id, convData.buyer_id, convData.seller_id);
-
-    // Mark messages as read (simple approach: mark all unseen from other as read)
     markAsRead(conversationId, user.id);
-
     scrollToBottom();
 }
 
@@ -274,54 +206,29 @@ async function markAsRead(conversationId, currentUserId) {
         .from('messages')
         .update({ is_read: true })
         .eq('conversation_id', conversationId)
-        .neq('sender_id', currentUserId) // Only mark others' messages
+        .neq('sender_id', currentUserId)
         .eq('is_read', false);
 }
 
-// 5. Render Messages
 function renderMessages(messages, currentUserId, buyerId, sellerId) {
     const container = document.getElementById('chat-messages');
     container.innerHTML = '';
 
     messages.forEach(msg => {
-        // Determine alignment
         const isMe = msg.sender_id === currentUserId;
-
-        // Determine styling role (Sender's role)
         const isSenderBuyer = msg.sender_id === buyerId;
-
-        // Quote lookup
-        let quoteHTML = '';
-        if (msg.reply_to_id) {
-            const quotedMsg = messages.find(m => m.id === msg.reply_to_id);
-            if (quotedMsg) {
-                quoteHTML = `<div class="message-quote">${quotedMsg.content}</div>`;
-            } else {
-                quoteHTML = `<div class="message-quote">Message deleted</div>`;
-            }
-        }
-
-        // Read Status for MY messages
-        let statusIcon = '';
-        if (isMe) {
-            // Check if it's read (Need real-time update for this to be live, but for history it works)
-            if (msg.is_read) {
-                statusIcon = '<i class="fas fa-box-open" title="Read"></i>'; // Open Bag
-            } else {
-                statusIcon = '<i class="fas fa-shopping-bag" title="Delivered"></i>'; // Closed Bag
-            }
-        }
-
         const alignClass = isMe ? 'message-align-right' : 'message-align-left';
-
-        // Style: Buyer = Grey, Seller = Black
         const styleClass = isSenderBuyer ? 'message-style-buyer' : 'message-style-seller';
 
-        // Name Logic - Use stored names, fallback to role if missing
-        let nameDisplay = activeParticipants[msg.sender_id];
-        if (!nameDisplay || nameDisplay === 'Buyer' || nameDisplay === 'Seller') {
-            nameDisplay = isSenderBuyer ? "Buyer" : "Seller";
+        let quoteHTML = '';
+        if (msg.reply_to_id) {
+            const quoted = messages.find(m => m.id === msg.reply_to_id);
+            if (quoted) quoteHTML = `<div class="message-quote">${quoted.content}</div>`;
         }
+
+        let statusIcon = isMe ? (msg.is_read ? '<i class="fas fa-box-open"></i>' : '<i class="fas fa-shopping-bag"></i>') : '';
+        let nameDisplay = activeParticipants[msg.sender_id] || (isSenderBuyer ? "Buyer" : "Seller");
+        if (isMe) nameDisplay = "Me";
 
         const msgHTML = `
             <div class="message-wrapper ${alignClass}">
@@ -340,539 +247,229 @@ function renderMessages(messages, currentUserId, buyerId, sellerId) {
     });
 }
 
-// 6. Send Message
-async function sendMessage() {
+function subscribeToMessages(conversationId, currentUserId, buyerId, sellerId) {
+    if (currentSubscription) supabaseClient.removeChannel(currentSubscription);
+    currentSubscription = supabaseClient
+        .channel(`chat:${conversationId}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` },
+            async (payload) => {
+                const { data: messages } = await supabaseClient
+                    .from('messages')
+                    .select('*')
+                    .eq('conversation_id', conversationId)
+                    .order('created_at', { ascending: true });
+                if (messages) renderMessages(messages, currentUserId, buyerId, sellerId);
+                scrollToBottom();
+                if (payload.new && payload.new.sender_id !== currentUserId) markAsRead(conversationId, currentUserId);
+            }).subscribe();
+}
+
+async function sendMessage(contentOverride = null) {
     const input = document.getElementById('chat-input');
-    const content = input.value.trim();
+    const content = (contentOverride || input.value).trim();
     if (!content || !activeConversationId) return;
 
     const { data: { user } } = await supabaseClient.auth.getUser();
-
     input.value = '';
     const replyId = activeReplyId;
     activeReplyId = null;
     hideReplyUI();
 
-    const { error } = await supabaseClient
-        .from('messages')
-        .insert({
-            conversation_id: activeConversationId,
-            sender_id: user.id,
-            content: content,
-            reply_to_id: replyId
-        });
+    const { error } = await supabaseClient.from('messages').insert({
+        conversation_id: activeConversationId,
+        sender_id: user.id,
+        content: content,
+        reply_to_id: replyId
+    });
 
     if (error) {
         alert("Failed to send.");
         input.value = content;
     } else {
-        await supabaseClient
-            .from('conversations')
-            .update({ updated_at: new Date() })
-            .eq('id', activeConversationId);
+        await supabaseClient.from('conversations').update({ updated_at: new Date() }).eq('id', activeConversationId);
     }
 }
 
-// Subscription
-function subscribeToMessages(conversationId, currentUserId, buyerId, sellerId) {
-    if (currentSubscription) supabaseClient.removeChannel(currentSubscription);
+// 5. Voice & File Extras
+let mediaRecorder;
+let audioChunks = [];
+let isRecording = false;
 
-    currentSubscription = supabaseClient
-        .channel(`chat:${conversationId}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` },
-            async (payload) => {
-                const container = document.getElementById('chat-messages');
+async function toggleRecording() {
+    const btn = document.getElementById('voice-rec-btn');
+    const input = document.getElementById('chat-input');
 
-                if (payload.eventType === 'INSERT') {
-                    const msg = payload.new;
-
-                    // Refresh full list to handle quotes/ordering safely easily? 
-                    // Or append. Let's append but we need logic for quotes.
-                    // Re-fetching is safer for quotes and simpler.
-                    // For now, let's just trigger a full re-render or efficient append requires fetching quote.
-
-                    // Optimize: Just re-fetch all for this specific chat view to ensure consistency
-                    const { data: messages } = await supabaseClient
-                        .from('messages')
-                        .select('*')
-                        .eq('conversation_id', conversationId)
-                        .order('created_at', { ascending: true });
-
-                    if (messages) renderMessages(messages, currentUserId, buyerId, sellerId);
-                    scrollToBottom();
-
-                    // If message is from other, mark read
-                    if (msg.sender_id !== currentUserId) {
-                        markAsRead(conversationId, currentUserId);
-                    }
-
-                } else if (payload.eventType === 'UPDATE') {
-                    // Handle Read Status changes
-                    const { data: messages } = await supabaseClient
-                        .from('messages')
-                        .select('*')
-                        .eq('conversation_id', conversationId)
-                        .order('created_at', { ascending: true });
-                    if (messages) renderMessages(messages, currentUserId, buyerId, sellerId);
-                }
-            })
-        .subscribe();
+    if (!isRecording) {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            mediaRecorder.onstop = () => {
+                console.log("Audio captured.");
+                sendMessage("🎤 Voice Message Recorded");
+                stream.getTracks().forEach(t => t.stop());
+            };
+            mediaRecorder.start();
+            isRecording = true;
+            btn.classList.add('recording');
+            input.placeholder = "Recording...";
+            input.disabled = true;
+        } catch (err) {
+            alert("Mic access denied.");
+        }
+    } else {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+        isRecording = false;
+        btn.classList.remove('recording');
+        input.placeholder = "Type a message...";
+        input.disabled = false;
+    }
 }
 
+async function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { alert("Images only."); return; }
+    sendMessage(`📷 Sent an image: ${file.name}`);
+    event.target.value = '';
+}
+
+// 6. Helpers
 function triggerReply(msgId, content) {
     activeReplyId = msgId;
-    const replyBar = document.getElementById('reply-bar');
-    const replyText = document.getElementById('reply-text');
-    replyBar.style.display = 'flex';
-    replyText.textContent = `Replying to: "${content.substring(0, 30)}${content.length > 30 ? '...' : ''}"`;
+    const rb = document.getElementById('reply-bar');
+    rb.style.display = 'flex';
+    document.getElementById('reply-text').textContent = `Replying to: "${content.substring(0, 30)}..."`;
     document.getElementById('chat-input').focus();
 }
-
-function hideReplyUI() {
-    activeReplyId = null;
-    document.getElementById('reply-bar').style.display = 'none';
-}
-
-function escapeHtml(text) {
-    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-}
-
-function scrollToBottom() {
-    const container = document.getElementById('chat-messages');
-    container.scrollTop = container.scrollHeight;
-}
-
+function hideReplyUI() { activeReplyId = null; document.getElementById('reply-bar').style.display = 'none'; }
+function escapeHtml(t) { return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+function scrollToBottom() { const c = document.getElementById('chat-messages'); c.scrollTop = c.scrollHeight; }
 function backToConversations() {
     document.getElementById('chat-view').style.display = 'none';
     document.getElementById('conversations-view').style.display = 'block';
+    document.getElementById('messages-modal').classList.remove('chat-active');
     activeConversationId = null;
     if (currentSubscription) supabaseClient.removeChannel(currentSubscription);
-
-    // --- VOICE RECORDING LOGIC ---
-    let mediaRecorder;
-    let audioChunks = [];
-    let isRecording = false;
-
-    async function toggleRecording() {
-        const btn = document.getElementById('voice-rec-btn');
-        const input = document.getElementById('chat-input');
-
-        if (!isRecording) {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                audioChunks = [];
-
-                mediaRecorder.ondataavailable = (event) => {
-                    audioChunks.push(event.data);
-                };
-
-                mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    // For now, we simulate sending a voice message as we don't have a storage backend set up here
-                    // In a real app, you'd upload audioBlob to Supabase Storage and send the URL.
-                    console.log("Recorded Audio Blob:", audioBlob);
-                    sendMessage("🎤 Voice Message Recorded"); // Sending a placeholder text
-
-                    // Stop all tracks to release microphone
-                    stream.getTracks().forEach(track => track.stop());
-                };
-
-                mediaRecorder.start();
-                isRecording = true;
-                btn.classList.add('recording');
-                input.placeholder = "Recording...";
-                input.disabled = true;
-
-            } catch (err) {
-                console.error("Microphone access denied:", err);
-                alert("Could not access microphone.");
-            }
-        } else {
-            mediaRecorder.stop();
-            isRecording = false;
-            btn.classList.remove('recording');
-            input.placeholder = "Type a message...";
-            input.disabled = false;
-        }
-    }
-
-    // Revert background to normal list view aesthetic
-    document.getElementById('messages-modal').classList.remove('chat-active');
-
     openMessagesDashboard();
 }
 
-// UI Builder
+// 7. UI Builder
 function createMessagesModal() {
     const html = `
     <div class="modal" id="messages-modal">
         <div class="modal-content messages-modal-content">
-            
-            <!-- VIEW 1: CONVERSATION LIST -->
             <div id="conversations-view" style="display:block; height: 100%;">
                 <div class="modal-header">
                     <h2 class="modal-title">Messages</h2>
                     <div style="display:flex; gap:15px; align-items:center;">
-                        <button class="icon-btn theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode"><i class="fas fa-moon"></i></button>
+                        <button class="icon-btn theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
                         <button class="modal-close" onclick="document.getElementById('messages-modal').classList.remove('active')">&times;</button>
                     </div>
                 </div>
-                <div id="conversation-list" class="conversation-list">
-                    <!-- Items go here -->
-                </div>
+                <div id="conversation-list" class="conversation-list"></div>
             </div>
-
-            <!-- VIEW 2: CHAT WINDOW -->
             <div id="chat-view" style="display:none; flex-direction: column; height: 100%;">
                 <div class="modal-header chat-header">
                     <div style="display:flex; align-items:center;">
                         <button class="btn-icon back-btn" onclick="backToConversations()"><i class="fas fa-arrow-left"></i></button>
                         <div class="conv-avatar small-avatar"><i class="fas fa-user"></i></div>
-                        <h3 id="chat-title" style="margin: 0; font-size: 1rem;">Chat</h3>
+                        <h3 id="chat-title">Chat</h3>
                     </div>
                     <div style="display:flex; gap:15px; align-items:center;">
-                         <button class="icon-btn theme-toggle" id="theme-toggle-btn-chat" onclick="toggleTheme()" title="Toggle Dark/Light Mode"><i class="fas fa-moon"></i></button>
+                         <button class="icon-btn theme-toggle" id="theme-toggle-btn-chat" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
                          <button class="modal-close" onclick="document.getElementById('messages-modal').classList.remove('active')">&times;</button>
                     </div>
                 </div>
-                
-                <div id="chat-messages" class="chat-messages">
-                    <!-- Bubble -->
-                </div>
-
-                <!-- Reply Bar -->
+                <div id="chat-messages" class="chat-messages"></div>
                 <div id="reply-bar" class="reply-bar">
                     <span id="reply-text">Replying...</span>
                     <button onclick="hideReplyUI()"><i class="fas fa-times"></i></button>
                 </div>
-
                 <div class="chat-input-area">
+                    <button class="attach-btn" onclick="document.getElementById('file-input').click()"><i class="fas fa-plus"></i></button>
+                    <input type="file" id="file-input" style="display:none" accept="image/*" onchange="handleFileSelect(event)">
                     <input type="text" id="chat-input" placeholder="Type a message...">
-                    <button class="voice-rec-btn" id="voice-rec-btn" onclick="toggleRecording()" title="Record Voice Message"><i class="fas fa-microphone"></i></button>
+                    <button class="voice-rec-btn" id="voice-rec-btn" onclick="toggleRecording()"><i class="fas fa-microphone"></i></button>
                     <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>
-
         </div>
     </div>
     <style>
-        /* --- VARIABLES --- */
         #messages-modal {
-            --msg-bg: #000;
-            --msg-text: #fff;
-            --msg-header-bg: #000;
-            --msg-border: rgba(255,255,255,0.1);
-            --msg-item-hover: rgba(255,255,255,0.08);
-            --msg-input-bg: rgba(20, 20, 20, 0.95);
-            --msg-input-field: rgba(255,255,255,0.05);
-            --msg-input-text: #fff;
-            --msg-text-sec: rgba(255,255,255,0.5);
-            --msg-btn-color: #fff;
-            --msg-shadow: rgba(0,0,0,0.5);
-            --msg-chat-bg: url('assets/chat_bg.jpg');
+            --msg-bg: #000; --msg-text: #fff; --msg-header-bg: #000;
+            --msg-border: rgba(255,255,255,0.1); --msg-item-hover: rgba(255,255,255,0.08);
+            --msg-input-bg: rgba(20, 20, 20, 0.95); --msg-input-field: rgba(255,255,255,0.05);
+            --msg-input-text: #fff; --msg-text-sec: rgba(255,255,255,0.5);
+            --msg-btn-color: #fff; --msg-shadow: rgba(0,0,0,0.5);
+            --msg-chat-bg: url('assets/dark_chat_bg.png');
         }
-
         #messages-modal.light-theme {
             --msg-bg: url('assets/light_bg.jpg') no-repeat center center / cover;
-            --msg-text: #ffffff; /* White text */
-            --msg-header-bg: #1a0f08; /* Very dark brown/black for header */
-            --msg-border: #d4a574; /* Warm tan border */
-            --msg-item-hover: rgba(255, 200, 150, 0.15); /* Warm peachy hover */
-            --msg-input-bg: rgba(255, 235, 215, 0.85); /* Warm cream input area */
-            --msg-input-field: rgba(255, 245, 230, 0.9); /* Light peachy input */
-            --msg-input-text: #2c1810; /* Dark brown text for input fields */
-            --msg-text-sec: #f5e6d3; /* Light cream for secondary text */
-            --msg-btn-color: #ffd4a3; /* Warm peach for buttons on dark header */
-            --msg-shadow: rgba(0,0,0,0.2);
+            --msg-text: #ffffff; --msg-header-bg: #1a0f08; --msg-border: #d4a574;
+            --msg-item-hover: rgba(255, 200, 150, 0.15); --msg-input-bg: rgba(255, 235, 215, 0.85);
+            --msg-input-field: rgba(255, 245, 230, 0.9); --msg-input-text: #2c1810;
+            --msg-text-sec: #f5e6d3; --msg-btn-color: #ffd4a3; --msg-shadow: rgba(0,0,0,0.2);
             --msg-chat-bg: url('assets/mountain_sunset_hd.png');
         }
-
         .messages-modal-content {
-            background: var(--msg-bg);
-            color: var(--msg-text);
-            font-family: 'Inter', sans-serif;
-            border: 1px solid var(--msg-border);
-            box-shadow: 0 25px 50px -12px var(--msg-shadow);
-            width: 800px;
-            height: 600px;
-            max-width: 95vw;
-            max-height: 85vh;
-            display: flex; 
-            flex-direction: column;
-            transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
-            border-radius: 12px;
+            background: var(--msg-bg); color: var(--msg-text); font-family: 'Inter', sans-serif;
+            border: 1px solid var(--msg-border); box-shadow: 0 25px 50px -12px var(--msg-shadow);
+            width: 800px; height: 600px; max-width: 95vw; max-height: 85vh;
+            display: flex; flex-direction: column; transition: all 0.4s ease;
+            position: relative; overflow: hidden; border-radius: 12px;
         }
-
-        /* Support for smaller screens */
-        @media (max-height: 700px) {
-            .messages-modal-content { height: 90vh; }
-        }
-
-        /* --- EXPANDED CHAT AESTHETIC --- */
-        #messages-modal.chat-active .messages-modal-content {
-            background: var(--msg-chat-bg) no-repeat center center / cover;
-        }
-
-        /* Unified overlay for the entire modal when chat is active */
+        #messages-modal.chat-active .messages-modal-content { background: var(--msg-chat-bg) no-repeat center center / cover; }
         #messages-modal.chat-active .messages-modal-content::before {
-            content: '';
-            position: absolute; inset: 0;
-            background: linear-gradient(to bottom, 
-                rgba(0,0,0,0.8) 0%, 
-                rgba(0,0,0,0.3) 50%, 
-                rgba(0,0,0,0.8) 100%);
-            pointer-events: none;
-            z-index: 0;
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.8) 100%);
+            pointer-events: none; z-index: 0;
         }
-
-        #messages-modal.chat-active .chat-header,
-        #messages-modal.chat-active .chat-messages,
-        #messages-modal.chat-active .chat-input-area {
-            background: transparent;
-            z-index: 1;
+        #messages-modal.chat-active .chat-header, #messages-modal.chat-active .chat-messages, #messages-modal.chat-active .chat-input-area {
+            background: transparent; z-index: 1;
         }
-        
-        #messages-modal.chat-active .chat-messages::before {
-            display: none; 
-        }
-
-        #chat-view {
-            height: 100%;
-            display: none;
-            flex-direction: column;
-            flex: 1;
-        }
-
-        #messages-modal.chat-active .chat-input-area {
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-
-        #messages-modal.chat-active .chat-header {
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
+        #chat-view { height: 100%; display: none; flex-direction: column; flex: 1; }
         .modal-header {
-            background: var(--msg-header-bg);
-            color: var(--msg-btn-color); /* Ensure text/title inherits this white/dark appropriately or set explicitly */
-            border-bottom: 1px solid rgba(255,255,255,0.1); /* Keep distinct separator if header is dark */
-            padding: 15px 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            transition: background 0.3s;
+            background: var(--msg-header-bg); color: var(--msg-btn-color);
+            padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;
         }
-        .modal-title { margin: 0; color: inherit; } /* Inherit color from header (White in both cases now) */
-        .modal-close, .back-btn, .icon-btn { 
-            background: none; border: none; 
-            color: var(--msg-btn-color); 
-            font-size: 1.2rem; cursor: pointer; 
-            transition: color 0.2s;
-        }
-        .modal-close:hover, .back-btn:hover { opacity: 0.7; }
-
-        .chat-header {
-            padding-bottom: 10px;
-        }
-
-        /* --- List View --- */
-        .conversation-list {
-            overflow-y: auto; flex: 1; min-height: 300px;
-        }
-
-        .conversation-item {
-            display: flex; align-items: center; padding: 18px 25px; 
-            border-bottom: 1px solid var(--msg-border); 
-            cursor: pointer; transition: all 0.3s;
-        }
-        .conversation-item:hover { 
-            background: var(--msg-item-hover); 
-            padding-left: 30px; 
-        }
-        .conv-avatar { 
-            width: 48px; height: 48px; 
-            background: linear-gradient(135deg, #333, #111); 
-            border: 1px solid var(--msg-border);
-            border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            margin-right: 18px; 
-            color: #fff; /* Always white icon on avatar */
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-        }
+        .icon-btn, .back-btn, .modal-close { background: none; border: none; color: inherit; cursor: pointer; font-size: 1.2rem; }
+        .conversation-list { overflow-y: auto; flex: 1; }
+        .conversation-item { display: flex; align-items: center; padding: 18px 25px; border-bottom: 1px solid var(--msg-border); cursor: pointer; }
+        .conversation-item:hover { background: var(--msg-item-hover); }
+        .conv-avatar { width: 48px; height: 48px; background: #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; }
         .small-avatar { width: 30px; height: 30px; margin-right: 10px; }
-
-        .conv-details h4 { margin: 0 0 4px 0; font-size: 1rem; font-weight: 600; color: var(--msg-text); }
-        .conv-details p { margin: 0; font-size: 0.85rem; color: var(--msg-text-sec); }
-        
-        .conv-arrow { margin-left: auto; color: var(--msg-text-sec); opacity: 0.5; transition: transform 0.3s; }
-        .conversation-item:hover .conv-arrow { transform: translateX(3px); opacity: 1; }
-
-        /* --- Chat View --- */
-        .chat-messages {
-            flex: 1; overflow-y: auto; padding: 15px; 
-            background: var(--msg-chat-bg) no-repeat center center; 
-            background-size: cover; 
-            display: flex; flex-direction: column;
-            position: relative;
-        }
-        
-        /* Gradient Overlay - Always dark to preserve contrast with bubbles? 
-           User said "keep background as it is". If I make the overlay light, it washes out the mountain.
-           I'll keep the overlay tailored to the image. Bubbles have their own contrast.
-        */
-        .chat-messages::before {
-            content: '';
-            position: absolute; inset: 0;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.7) 100%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .chat-messages::-webkit-scrollbar { width: 6px; }
-        .chat-messages::-webkit-scrollbar-track { background: transparent; }
-        .chat-messages::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.3); border-radius: 3px; }
-
-        .message-wrapper { 
-            margin-bottom: 20px; 
-            display: flex; flex-direction: column; 
-            max-width: 75%; 
-            z-index: 1; 
-            animation: slideUp 0.3s forwards;
-            opacity: 0; transform: translateY(15px);
-        }
-        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
-
+        .chat-messages { flex: 1; overflow-y: auto; padding: 15px; background: var(--msg-chat-bg) no-repeat center center / cover; display: flex; flex-direction: column; position: relative; }
+        .chat-messages::before { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.4); z-index: 0; pointer-events: none; }
+        .message-wrapper { margin-bottom: 15px; display: flex; flex-direction: column; max-width: 80%; z-index: 1; }
         .message-align-right { align-self: flex-end; align-items: flex-end; }
         .message-align-left { align-self: flex-start; align-items: flex-start; }
-        
-        .message { 
-            padding: 14px 20px; 
-            border-radius: 18px; 
-            font-size: 0.95rem; line-height: 1.5; 
-            position: relative; cursor: pointer; 
-            transition: all 0.2s; 
-            backdrop-filter: blur(12px); 
-            -webkit-backdrop-filter: blur(12px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        .message:hover { transform: translateY(-1px); }
-        .message:active { transform: scale(0.98); }
-        
-        /* Bubbles - Keep these mostly consistent to pop against mountain */
-        .message-style-buyer { 
-            background: rgba(80, 80, 80, 0.6); 
-            color: rgba(255,255,255,0.95); 
-            border: 1px solid rgba(255,255,255,0.1);
-            border-bottom-left-radius: 4px; 
-        } 
-        .message-style-seller { 
-            background: rgba(0, 0, 0, 0.75); 
-            color: #fff; 
-            border: 1px solid rgba(255,255,255,0.15);
-            border-bottom-right-radius: 4px; 
-        } 
-
-        .message-sender-name { 
-            font-size: 0.75rem; font-weight: 500; text-transform: uppercase;
-            color: rgba(255,255,255,0.8); 
-            margin-bottom: 6px; margin: 0 4px 6px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-        }
-
-        .message-meta { 
-            display: flex; justify-content: flex-end; align-items: center; 
-            margin-top: 6px; opacity: 0.8; gap: 6px; 
-        }
-        .message-time { font-size: 0.65rem; color: rgba(255,255,255,0.7); }
-        .message-status { font-size: 0.75rem; }
-
-        .message-quote { 
-            background: rgba(0,0,0,0.3); 
-            border-left: 3px solid var(--color-cta); 
-            padding: 8px 12px; margin-bottom: 8px; 
-            font-size: 0.85rem; font-style: italic; color: rgba(255,255,255,0.8);
-            border-radius: 6px; 
-        }
-
-        /* --- Footer / Input --- */
-        .chat-input-area {
-            background: var(--msg-input-bg);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid var(--msg-border);
-            padding: 20px;
-            display: flex; gap: 10px;
-            transition: background 0.3s;
-        }
-        #chat-input {
-            flex:1; padding: 10px; border-radius: 20px; 
-            background: var(--msg-input-field);
-            border: 1px solid var(--msg-border);
-            color: var(--msg-input-text);
-            font-size: 1rem;
-            transition: all 0.2s;
-        }
-        #chat-input:focus {
-            outline: none;
-            border-color: rgba(128,128,128,0.5);
-            box-shadow: 0 0 0 3px rgba(128,128,128,0.1);
-        }
-        
-        .voice-rec-btn {
-            border-radius: 50%; width: 40px; height: 40px; 
-            padding: 0; display:flex; align-items:center; justify-content:center;
-            background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); 
-            cursor: pointer; transition: all 0.3s;
-        }
-        .voice-rec-btn:hover { background: rgba(255,255,255,0.2); }
-        .voice-rec-btn.recording {
-            background: #ff4b2b;
-            animation: pulse-red 1.5s infinite;
-            border-color: #ff4b2b;
-        }
-        @keyframes pulse-red {
-            0% { box-shadow: 0 0 0 0 rgba(255, 75, 43, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(255, 75, 43, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 75, 43, 0); }
-        }
-
-        .send-btn {
-            border-radius: 50%; width: 40px; height: 40px; 
-            padding: 0; display:flex; align-items:center; justify-content:center;
-            background: var(--color-cta); color: #fff; border: none; cursor: pointer;
-        }
-        
-        .reply-bar {
-             display:none; background: #222; 
-             padding: 5px 15px; border-left: 3px solid var(--color-cta); 
-             justify-content: space-between; align-items: center;
-        }
-        .reply-bar button { background:none; border:none; color:white; cursor: pointer; }
-        
-        .light-theme .reply-bar { background: #e0e0e0; }
-        .light-theme .reply-bar button { color: #333; }
-        .light-theme #reply-text { color: #333; }
-        #reply-text { font-size: 0.8rem; color: #aaa; }
-
+        .message { padding: 12px 18px; border-radius: 15px; backdrop-filter: blur(10px); color: #fff; }
+        .message-style-buyer { background: rgba(100,100,100,0.7); border-bottom-left-radius: 2px; }
+        .message-style-seller { background: rgba(0,0,0,0.8); border-bottom-right-radius: 2px; }
+        .chat-input-area { background: var(--msg-input-bg); padding: 15px; display: flex; gap: 10px; align-items: center; backdrop-filter: blur(15px); }
+        #chat-input { flex: 1; padding: 10px 15px; border-radius: 20px; background: var(--msg-input-field); border: 1px solid var(--msg-border); color: var(--msg-input-text); }
+        .attach-btn, .voice-rec-btn, .send-btn { width: 38px; height: 38px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; }
+        .attach-btn, .voice-rec-btn { background: rgba(255,255,255,0.1); }
+        .send-btn { background: var(--color-cta); }
+        .voice-rec-btn.recording { background: #ff4b2b; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,75,43,0.7); } 70% { box-shadow: 0 0 0 10px rgba(255,75,43,0); } 100% { box-shadow: 0 0 0 0 rgba(255,75,43,0); } }
+        .reply-bar { display: none; background: rgba(0,0,0,0.5); padding: 5px 15px; border-left: 3px solid var(--color-cta); color: #fff; font-size: 0.8rem; justify-content: space-between; }
     </style>
     `;
-
     document.body.insertAdjacentHTML('beforeend', html);
-
-    document.addEventListener('keydown', (e) => {
-        if (e.target.id === 'chat-input' && e.key === 'Enter') {
-            sendMessage();
-        }
-    });
-
-    // Apply default/saved theme
+    document.addEventListener('keydown', e => { if (e.target.id === 'chat-input' && e.key === 'Enter') sendMessage(); });
     applyTheme();
 }
 
-// Expose globally
-window.toggleTheme = toggleTheme;
-window.toggleRecording = toggleRecording;
 window.openMessagesDashboard = openMessagesDashboard;
 window.startChat = startChat;
 window.openChat = openChat;
+window.toggleTheme = toggleTheme;
+window.toggleRecording = toggleRecording;
+window.handleFileSelect = handleFileSelect;
+window.backToConversations = backToConversations;
+window.sendMessage = sendMessage;
+window.hideReplyUI = hideReplyUI;
