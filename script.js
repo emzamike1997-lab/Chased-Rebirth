@@ -801,6 +801,7 @@ async function loadRebirthItems() {
 
             if (targetGrid) {
                 const safeTitle = item.title.replace(/'/g, "\\'");
+                const safeSellerName = (item.seller_name || 'Seller').replace(/'/g, "\\'"); // Escape for JS call
                 const itemID = item.id;
                 const sellerID = item.user_id; // Assumes user_id column exists
 
@@ -824,7 +825,7 @@ async function loadRebirthItems() {
                             <span class="product-price">${item.price}</span>
                         </div>
                         <div class="product-actions" style="margin-top: 10px;">
-                             <button class="btn btn-secondary btn-sm" onclick="startChat('${sellerID}', '${itemID}', '${safeTitle}')" style="font-size: 0.8rem; padding: 5px 10px; width: 100%;">
+                             <button class="btn btn-secondary btn-sm" onclick="startChat('${sellerID}', '${itemID}', '${safeTitle}', '${safeSellerName}')" style="font-size: 0.8rem; padding: 5px 10px; width: 100%;">
                                 <i class="fas fa-comment-alt"></i> Message Seller
                              </button>
                         </div>

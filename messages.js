@@ -124,7 +124,7 @@ function updateToggleIcon() {
 // -------------------
 
 // 3. Start Chat (New or Existing)
-async function startChat(sellerId, itemId, itemTitle) {
+async function startChat(sellerId, itemId, itemTitle, sellerName) {
     const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) {
         alert("Please login to message the seller.");
@@ -152,7 +152,6 @@ async function startChat(sellerId, itemId, itemTitle) {
         // Get current user's name
         const buyerName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Buyer';
 
-        // Note: We don't have seller's name here, it will be updated when seller opens the chat
         const { data: newConv, error: createError } = await supabaseClient
             .from('conversations')
             .insert({
@@ -161,7 +160,7 @@ async function startChat(sellerId, itemId, itemTitle) {
                 item_id: itemId,
                 item_title: itemTitle,
                 buyer_name: buyerName,
-                seller_name: 'Seller' // Placeholder, will be updated when seller opens chat
+                seller_name: sellerName || 'Seller'
             })
             .select()
             .single();
@@ -188,12 +187,6 @@ async function openChat(conversationId, title) {
     const chatView = document.getElementById('chat-view');
     chatView.style.display = 'flex';
 
-    document.getElementById('chat-title').innerHTML = `
-        <div style="display:flex; flex-direction:column;">
-            <span>${title}</span>
-            <span id="chat-subtitle" style="font-size: 0.7rem; color: #888; font-weight: normal;">Loading details...</span>
-        </div>
-    `;
     const msgContainer = document.getElementById('chat-messages');
     msgContainer.innerHTML = '<p class="loading-text">Loading...</p>';
 
@@ -206,7 +199,7 @@ async function openChat(conversationId, title) {
 
     const { data: { user } } = await supabaseClient.auth.getUser();
 
-    // Update conversation with current user's name if not already set
+    // Update conversation with current user's name if not already set (for older conversations)
     const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
     const updateData = {};
 
@@ -216,30 +209,33 @@ async function openChat(conversationId, title) {
         updateData.seller_name = userName;
     }
 
-    // Update if we have data to update
     if (Object.keys(updateData).length > 0) {
         await supabaseClient
             .from('conversations')
             .update(updateData)
             .eq('id', conversationId);
-        // Update local copy
         Object.assign(convData, updateData);
     }
 
     // Resolve Participants using stored names
-    let otherRole = "";
+    let otherName = "";
     if (user.id === convData.buyer_id) {
         activeConversationRole = 'buyer'; // I am the buyer
-        otherRole = convData.seller_name || "Seller";
-        activeParticipants = { [convData.buyer_id]: "Me", [convData.seller_id]: otherRole };
+        otherName = convData.seller_name || "Seller";
+        activeParticipants = { [convData.buyer_id]: "Me", [convData.seller_id]: otherName };
     } else {
         activeConversationRole = 'seller'; // I am the seller
-        otherRole = convData.buyer_name || "Buyer";
-        activeParticipants = { [convData.seller_id]: "Me", [convData.buyer_id]: otherRole };
+        otherName = convData.buyer_name || "Buyer";
+        activeParticipants = { [convData.seller_id]: "Me", [convData.buyer_id]: otherName };
     }
 
-    // Update Header
-    document.getElementById('chat-subtitle').textContent = `Chatting with ${otherRole}`;
+    // Update Header: Username as Title, Product Name as Subtitle (Fixed)
+    document.getElementById('chat-title').innerHTML = `
+        <div style="display:flex; flex-direction:column;">
+            <span style="font-size: 1.1rem; font-weight: 600;">${otherName}</span>
+            <span id="chat-subtitle" style="font-size: 0.75rem; color: var(--msg-text-sec); font-weight: normal;">${convData.item_title || 'Item Inquiry'}</span>
+        </div>
+    `;
 
     // Load History
     const { data: messages, error } = await supabaseClient
@@ -310,14 +306,10 @@ function renderMessages(messages, currentUserId, buyerId, sellerId) {
         const alignClass = isMe ? 'message-align-right' : 'message-align-left';
 
         // Style: Buyer = Grey, Seller = Black
-        // Note: We need contrast for text.
-        // Buyer (Grey) -> Black Text
-        // Seller (Black) -> White Text
         const styleClass = isSenderBuyer ? 'message-style-buyer' : 'message-style-seller';
 
-        // Name Logic
-        const senderRoleName = isSenderBuyer ? "Buyer" : "Seller";
-        const nameDisplay = isMe ? "Me" : senderRoleName;
+        // Name Logic - Use stored names
+        const nameDisplay = activeParticipants[msg.sender_id] || (isSenderBuyer ? "Buyer" : "Seller");
 
         const msgHTML = `
             <div class="message-wrapper ${alignClass}">
