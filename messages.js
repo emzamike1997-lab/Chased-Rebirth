@@ -78,6 +78,51 @@ async function renderConversationList(conversations, currentUserId) {
     });
 }
 
+// --- THEME LOGIC ---
+function toggleTheme() {
+    const modal = document.getElementById('messages-modal');
+    if (!modal) return;
+
+    // Toggle class
+    const isLight = modal.classList.contains('light-theme');
+    if (isLight) {
+        modal.classList.remove('light-theme');
+        localStorage.setItem('chased_msg_theme', 'dark');
+    } else {
+        modal.classList.add('light-theme');
+        localStorage.setItem('chased_msg_theme', 'light');
+    }
+    updateToggleIcon();
+}
+
+function applyTheme() {
+    const modal = document.getElementById('messages-modal');
+    if (!modal) return;
+
+    const saved = localStorage.getItem('chased_msg_theme');
+    // Default to LIGHT if no preference (as per user request "wants messaging system to have white background")
+    if (saved === 'dark') {
+        modal.classList.remove('light-theme');
+    } else {
+        modal.classList.add('light-theme');
+    }
+    updateToggleIcon();
+}
+
+function updateToggleIcon() {
+    const btn = document.getElementById('theme-toggle-btn');
+    const btn2 = document.getElementById('theme-toggle-btn-chat');
+    const modal = document.getElementById('messages-modal');
+    if (!modal) return;
+
+    const isLight = modal.classList.contains('light-theme');
+    const iconClass = isLight ? 'fa-moon' : 'fa-sun';
+
+    if (btn) btn.innerHTML = `<i class="fas ${iconClass}"></i>`;
+    if (btn2) btn2.innerHTML = `<i class="fas ${iconClass}"></i>`;
+}
+// -------------------
+
 // 3. Start Chat (New or Existing)
 async function startChat(sellerId, itemId, itemTitle) {
     const { data: { user } } = await supabaseClient.auth.getUser();
@@ -383,93 +428,162 @@ function backToConversations() {
 function createMessagesModal() {
     const html = `
     <div class="modal" id="messages-modal">
-        <div class="modal-content" style="max-height: 80vh; display: flex; flex-direction: column; background: #111; color: white;">
+        <div class="modal-content messages-modal-content">
             
             <!-- VIEW 1: CONVERSATION LIST -->
             <div id="conversations-view" style="display:block; height: 100%;">
                 <div class="modal-header">
                     <h2 class="modal-title">Messages</h2>
-                    <button class="modal-close" onclick="document.getElementById('messages-modal').classList.remove('active')">&times;</button>
+                    <div style="display:flex; gap:15px; align-items:center;">
+                        <button class="icon-btn theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode"><i class="fas fa-moon"></i></button>
+                        <button class="modal-close" onclick="document.getElementById('messages-modal').classList.remove('active')">&times;</button>
+                    </div>
                 </div>
-                <div id="conversation-list" class="conversation-list" style="overflow-y: auto; flex: 1; min-height: 300px;">
+                <div id="conversation-list" class="conversation-list">
                     <!-- Items go here -->
                 </div>
             </div>
 
             <!-- VIEW 2: CHAT WINDOW -->
             <div id="chat-view" style="display:none; flex-direction: column; height: 100%;">
-                <div class="modal-header" style="border-bottom: 1px solid #333; padding-bottom: 10px; background: #000;">
+                <div class="modal-header chat-header">
                     <div style="display:flex; align-items:center;">
-                        <button class="btn-icon" onclick="backToConversations()" style="color:white; margin-right:15px;"><i class="fas fa-arrow-left"></i></button>
-                        <div class="conv-avatar" style="width:30px; height:30px; margin-right:10px;"><i class="fas fa-user"></i></div>
+                        <button class="btn-icon back-btn" onclick="backToConversations()"><i class="fas fa-arrow-left"></i></button>
+                        <div class="conv-avatar small-avatar"><i class="fas fa-user"></i></div>
                         <h3 id="chat-title" style="margin: 0; font-size: 1rem;">Chat</h3>
                     </div>
-                    <button class="modal-close" onclick="document.getElementById('messages-modal').classList.remove('active')">&times;</button>
+                    <div style="display:flex; gap:15px; align-items:center;">
+                         <button class="icon-btn theme-toggle" id="theme-toggle-btn-chat" onclick="toggleTheme()" title="Toggle Dark/Light Mode"><i class="fas fa-moon"></i></button>
+                         <button class="modal-close" onclick="document.getElementById('messages-modal').classList.remove('active')">&times;</button>
+                    </div>
                 </div>
                 
-                <div id="chat-messages" class="chat-messages" style="flex: 1; overflow-y: auto; padding: 15px; background: url('assets/chat_bg.jpg') no-repeat center center; background-size: cover; display: flex; flex-direction: column;">
+                <div id="chat-messages" class="chat-messages">
                     <!-- Bubble -->
                 </div>
 
                 <!-- Reply Bar -->
-                <div id="reply-bar" style="display:none; background: #222; padding: 5px 15px; border-left: 3px solid var(--color-cta); justify-content: space-between; align-items: center;">
-                    <span id="reply-text" style="font-size: 0.8rem; color: #aaa;">Replying...</span>
-                    <button onclick="hideReplyUI()" style="background:none; border:none; color:white;"><i class="fas fa-times"></i></button>
+                <div id="reply-bar" class="reply-bar">
+                    <span id="reply-text">Replying...</span>
+                    <button onclick="hideReplyUI()"><i class="fas fa-times"></i></button>
                 </div>
 
-                <div class="chat-input-area" style="padding: 15px; border-top: 1px solid #333; display: flex; gap: 10px; background: #000;">
-                    <input type="text" id="chat-input" placeholder="Type a message..." style="flex:1; padding: 10px; border-radius: 20px; border: 1px solid #444; background: #222; color: white;">
-                    <button class="btn btn-primary" onclick="sendMessage()" style="border-radius: 50%; width: 40px; height: 40px; padding: 0; display:flex; align-items:center; justify-content:center;"><i class="fas fa-paper-plane"></i></button>
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input" placeholder="Type a message...">
+                    <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>
 
         </div>
     </div>
     <style>
-        .modal-content {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: #000; /* Fallback */
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        /* --- VARIABLES --- */
+        #messages-modal {
+            --msg-bg: #000;
+            --msg-text: #fff;
+            --msg-header-bg: #000;
+            --msg-border: rgba(255,255,255,0.1);
+            --msg-item-hover: rgba(255,255,255,0.08);
+            --msg-input-bg: rgba(20, 20, 20, 0.95);
+            --msg-input-field: rgba(255,255,255,0.05);
+            --msg-input-text: #fff;
+            --msg-text-sec: rgba(255,255,255,0.5);
+            --msg-btn-color: #fff;
+            --msg-shadow: rgba(0,0,0,0.5);
         }
 
-        /* --- Scrollbar --- */
-        .chat-messages::-webkit-scrollbar { width: 6px; }
-        .chat-messages::-webkit-scrollbar-track { background: transparent; }
-        .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
-        .chat-messages::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+        #messages-modal.light-theme {
+            --msg-bg: #ffffff;
+            --msg-text: #000000;
+            --msg-header-bg: #f8f8f8;
+            --msg-border: #e0e0e0;
+            --msg-item-hover: #f0f0f0;
+            --msg-input-bg: #ffffff;
+            --msg-input-field: #f5f5f5;
+            --msg-input-text: #000;
+            --msg-text-sec: #666666;
+            --msg-btn-color: #333;
+            --msg-shadow: rgba(0,0,0,0.1);
+        }
+
+        .messages-modal-content {
+            background: var(--msg-bg);
+            color: var(--msg-text);
+            font-family: 'Inter', sans-serif;
+            border: 1px solid var(--msg-border);
+            box-shadow: 0 25px 50px -12px var(--msg-shadow);
+            max-height: 80vh; 
+            display: flex; 
+            flex-direction: column;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .modal-header {
+            background: var(--msg-header-bg);
+            border-bottom: 1px solid var(--msg-border);
+            padding: 15px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: background 0.3s;
+        }
+        .modal-title { margin: 0; }
+        .modal-close, .back-btn, .icon-btn { 
+            background: none; border: none; 
+            color: var(--msg-btn-color); 
+            font-size: 1.2rem; cursor: pointer; 
+            transition: color 0.2s;
+        }
+        .modal-close:hover, .back-btn:hover { opacity: 0.7; }
+
+        .chat-header {
+            padding-bottom: 10px;
+        }
 
         /* --- List View --- */
+        .conversation-list {
+            overflow-y: auto; flex: 1; min-height: 300px;
+        }
+
         .conversation-item {
             display: flex; align-items: center; padding: 18px 25px; 
-            border-bottom: 1px solid rgba(255,255,255,0.05); 
-            cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-bottom: 1px solid var(--msg-border); 
+            cursor: pointer; transition: all 0.3s;
         }
         .conversation-item:hover { 
-            background: rgba(255,255,255,0.08); 
-            padding-left: 30px; /* Slight slide effect */
+            background: var(--msg-item-hover); 
+            padding-left: 30px; 
         }
         .conv-avatar { 
             width: 48px; height: 48px; 
             background: linear-gradient(135deg, #333, #111); 
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid var(--msg-border);
             border-radius: 50%; 
             display: flex; align-items: center; justify-content: center; 
             margin-right: 18px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            color: #fff; /* Always white icon on avatar */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
-        .conv-details h4 { margin: 0 0 4px 0; font-size: 1rem; font-weight: 600; letter-spacing: 0.3px; color: #fff; }
-        .conv-details p { margin: 0; font-size: 0.85rem; color: rgba(255,255,255,0.5); }
-        .conv-arrow { margin-left: auto; color: rgba(255,255,255,0.3); transition: transform 0.3s; }
-        .conversation-item:hover .conv-arrow { transform: translateX(3px); color: #fff; }
+        .small-avatar { width: 30px; height: 30px; margin-right: 10px; }
+
+        .conv-details h4 { margin: 0 0 4px 0; font-size: 1rem; font-weight: 600; color: var(--msg-text); }
+        .conv-details p { margin: 0; font-size: 0.85rem; color: var(--msg-text-sec); }
+        
+        .conv-arrow { margin-left: auto; color: var(--msg-text-sec); opacity: 0.5; transition: transform 0.3s; }
+        .conversation-item:hover .conv-arrow { transform: translateX(3px); opacity: 1; }
 
         /* --- Chat View --- */
-        #chat-messages {
-            /* Background handles by inline style, but we add overlay here if needed */
+        .chat-messages {
+            flex: 1; overflow-y: auto; padding: 15px; 
+            background: url('assets/chat_bg.jpg') no-repeat center center; 
+            background-size: cover; 
+            display: flex; flex-direction: column;
             position: relative;
         }
-        /* Gradient Overlay for Background Readability */
-        #chat-messages::before {
+        
+        /* Gradient Overlay - Always dark to preserve contrast with bubbles? 
+           User said "keep background as it is". If I make the overlay light, it washes out the mountain.
+           I'll keep the overlay tailored to the image. Bubbles have their own contrast.
+        */
+        .chat-messages::before {
             content: '';
             position: absolute; inset: 0;
             background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.7) 100%);
@@ -477,12 +591,16 @@ function createMessagesModal() {
             z-index: 0;
         }
 
+        .chat-messages::-webkit-scrollbar { width: 6px; }
+        .chat-messages::-webkit-scrollbar-track { background: transparent; }
+        .chat-messages::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.3); border-radius: 3px; }
+
         .message-wrapper { 
             margin-bottom: 20px; 
             display: flex; flex-direction: column; 
             max-width: 75%; 
-            z-index: 1; /* Above overlay */
-            animation: slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            z-index: 1; 
+            animation: slideUp 0.3s forwards;
             opacity: 0; transform: translateY(15px);
         }
         @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
@@ -500,38 +618,35 @@ function createMessagesModal() {
             -webkit-backdrop-filter: blur(12px);
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
-        .message:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+        .message:hover { transform: translateY(-1px); }
         .message:active { transform: scale(0.98); }
         
-        /* Buyer (Grey Glass) */
+        /* Bubbles - Keep these mostly consistent to pop against mountain */
         .message-style-buyer { 
             background: rgba(80, 80, 80, 0.6); 
             color: rgba(255,255,255,0.95); 
             border: 1px solid rgba(255,255,255,0.1);
-            border-bottom-left-radius: 4px; /* Distinct shape */
+            border-bottom-left-radius: 4px; 
         } 
-        
-        /* Seller (Black Glass) */
         .message-style-seller { 
             background: rgba(0, 0, 0, 0.75); 
             color: #fff; 
             border: 1px solid rgba(255,255,255,0.15);
-            border-bottom-right-radius: 4px; /* Distinct shape */
+            border-bottom-right-radius: 4px; 
         } 
 
         .message-sender-name { 
-            font-size: 0.75rem; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase;
-            color: rgba(255,255,255,0.6); 
-            margin-bottom: 6px; margin-left: 2px; margin-right: 2px; 
+            font-size: 0.75rem; font-weight: 500; text-transform: uppercase;
+            color: rgba(255,255,255,0.8); 
+            margin-bottom: 6px; margin: 0 4px 6px;
             text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
 
         .message-meta { 
             display: flex; justify-content: flex-end; align-items: center; 
-            margin-top: 6px; 
-            opacity: 0.8; gap: 6px; 
+            margin-top: 6px; opacity: 0.8; gap: 6px; 
         }
-        .message-time { font-size: 0.65rem; font-weight: 400; color: rgba(255,255,255,0.7); }
+        .message-time { font-size: 0.65rem; color: rgba(255,255,255,0.7); }
         .message-status { font-size: 0.75rem; }
 
         .message-quote { 
@@ -542,27 +657,47 @@ function createMessagesModal() {
             border-radius: 6px; 
         }
 
-        /* --- Input Area --- */
+        /* --- Footer / Input --- */
         .chat-input-area {
-            background: rgba(20, 20, 20, 0.95) !important;
+            background: var(--msg-input-bg);
             backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255,255,255,0.08) !important;
-            padding: 20px !important;
+            border-top: 1px solid var(--msg-border);
+            padding: 20px;
+            display: flex; gap: 10px;
+            transition: background 0.3s;
         }
         #chat-input {
-            background: rgba(255,255,255,0.05) !important;
-            border: 1px solid rgba(255,255,255,0.1) !important;
-            color: #fff !important;
-            padding: 12px 20px !important;
+            flex:1; padding: 10px; border-radius: 20px; 
+            background: var(--msg-input-field);
+            border: 1px solid var(--msg-border);
+            color: var(--msg-input-text);
             font-size: 1rem;
             transition: all 0.2s;
         }
         #chat-input:focus {
-            background: rgba(255,255,255,0.1) !important;
-            border-color: rgba(255,255,255,0.3) !important;
             outline: none;
-            box-shadow: 0 0 0 3px rgba(255,255,255,0.05);
+            border-color: rgba(128,128,128,0.5);
+            box-shadow: 0 0 0 3px rgba(128,128,128,0.1);
         }
+        
+        .send-btn {
+            border-radius: 50%; width: 40px; height: 40px; 
+            padding: 0; display:flex; align-items:center; justify-content:center;
+            background: var(--color-cta); color: #fff; border: none; cursor: pointer;
+        }
+        
+        .reply-bar {
+             display:none; background: #222; 
+             padding: 5px 15px; border-left: 3px solid var(--color-cta); 
+             justify-content: space-between; align-items: center;
+        }
+        .reply-bar button { background:none; border:none; color:white; cursor: pointer; }
+        
+        .light-theme .reply-bar { background: #e0e0e0; }
+        .light-theme .reply-bar button { color: #333; }
+        .light-theme #reply-text { color: #333; }
+        #reply-text { font-size: 0.8rem; color: #aaa; }
+
     </style>
     `;
 
@@ -573,7 +708,12 @@ function createMessagesModal() {
             sendMessage();
         }
     });
+
+    // Apply default/saved theme
+    applyTheme();
 }
+
+window.toggleTheme = toggleTheme;
 
 // Expose globally
 window.openMessagesDashboard = openMessagesDashboard;
