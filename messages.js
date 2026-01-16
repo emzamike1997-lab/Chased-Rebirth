@@ -494,16 +494,16 @@ function createMessagesModal() {
 
         #messages-modal.light-theme {
             --msg-bg: url('assets/light_bg.jpg') no-repeat center center / cover;
-            --msg-text: #000000;
-            --msg-header-bg: #000000; /* Dark header in light mode */
-            --msg-border: #e0e0e0;
-            --msg-item-hover: rgba(0,0,0,0.05); /* Soften hover on image */
-            --msg-input-bg: rgba(255,255,255,0.9); /* Translucent input area */
-            --msg-input-field: rgba(255,255,255,0.8);
-            --msg-input-text: #000;
-            --msg-text-sec: #333333; /* Darker secondary text for contrast */
-            --msg-btn-color: #ffffff; 
-            --msg-shadow: rgba(0,0,0,0.1);
+            --msg-text: #2c1810; /* Dark brown for text */
+            --msg-header-bg: #1a0f08; /* Very dark brown/black for header */
+            --msg-border: #d4a574; /* Warm tan border */
+            --msg-item-hover: rgba(255, 200, 150, 0.15); /* Warm peachy hover */
+            --msg-input-bg: rgba(255, 235, 215, 0.85); /* Warm cream input area */
+            --msg-input-field: rgba(255, 245, 230, 0.9); /* Light peachy input */
+            --msg-input-text: #2c1810; /* Dark brown text */
+            --msg-text-sec: #6b4423; /* Medium brown for secondary text */
+            --msg-btn-color: #ffd4a3; /* Warm peach for buttons on dark header */
+            --msg-shadow: rgba(0,0,0,0.2);
         }
 
         .messages-modal-content {
