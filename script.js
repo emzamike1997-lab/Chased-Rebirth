@@ -647,6 +647,11 @@ function openListingForm() {
                             </select>
                         </div>
 
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label class="dashboard-label">Product Description</label>
+                            <textarea id="list-description" class="dashboard-input" rows="4" placeholder="Describe the condition, size, and material..." required style="resize: none;"></textarea>
+                        </div>
+
                         <button type="submit" class="btn btn-primary btn-full">Post to Rebirth</button>
                     </form>
                 </div>
@@ -681,6 +686,7 @@ async function handlePostItem(e) {
     const price = document.getElementById('list-price').value;
     const fileInput = document.getElementById('list-image-file');
     const category = document.getElementById('list-category').value;
+    const description = document.getElementById('list-description').value;
     const submitBtn = e.target.querySelector('button[type="submit"]');
 
     if (!title || !price || fileInput.files.length === 0) {
@@ -721,6 +727,7 @@ async function handlePostItem(e) {
                 price: `Â£${price}`,
                 image_url: publicUrl,
                 category: category,
+                description: description,
                 seller_name: user.user_metadata.full_name || "Community Member",
                 user_id: user.id
             });
@@ -809,6 +816,8 @@ async function loadRebirthItems() {
                 const currentUserID = (supabaseClient.auth.currentUser || {}).id; // Might need async check if not cached, but usually session restore does it.
                 // Better approach: We will handle logic inside onclick or simply show button and let startChat handle self-check
 
+                const description = (item.description || "No description provided.").replace(/'/g, "\\'").replace(/\n/g, "<br>");
+
                 const itemHTML = `
                     <div class="product-card">
                         <div class="product-image-container">
@@ -824,9 +833,12 @@ async function loadRebirthItems() {
                             </div>
                             <span class="product-price">${item.price}</span>
                         </div>
-                        <div class="product-actions" style="margin-top: 10px;">
-                             <button class="btn btn-secondary btn-sm" onclick="startChat('${sellerID}', '${itemID}', '${safeTitle}', '${safeSellerName}')" style="font-size: 0.8rem; padding: 5px 10px; width: 100%;">
-                                <i class="fas fa-comment-alt"></i> Message Seller
+                        <div class="product-actions" style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                             <button class="btn btn-secondary btn-sm" onclick="showProductDetails('${safeTitle}', '${item.price}', '${safeSellerName}', '${description}', '${item.image_url}')" style="font-size: 0.75rem; padding: 6px;">
+                                <i class="fas fa-info-circle"></i> Details
+                             </button>
+                             <button class="btn btn-secondary btn-sm" onclick="startChat('${sellerID}', '${itemID}', '${safeTitle}', '${safeSellerName}')" style="font-size: 0.75rem; padding: 6px;">
+                                <i class="fas fa-comment-alt"></i> Message
                              </button>
                         </div>
                     </div>
@@ -868,6 +880,56 @@ function addToCartFromRebirth(name, price, image) {
     cartCount++;
     updateCartCount();
     alert('Added to cart!');
+}
+
+function showProductDetails(title, price, seller, description, image) {
+    let detailsModal = document.getElementById('details-modal');
+
+    if (!detailsModal) {
+        const modalHTML = `
+            <div class="modal" id="details-modal">
+                <div class="modal-content" style="max-width: 500px;">
+                    <div class="modal-header">
+                        <h2 class="modal-title">Product Details</h2>
+                        <button class="modal-close" id="close-details-modal">&times;</button>
+                    </div>
+                    <div class="details-body" style="padding: 1rem 0;">
+                        <img id="details-image" src="${image}" style="width: 100%; height: 300px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem; border: 1px solid rgba(255,255,255,0.1);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                            <h3 id="details-title" style="font-size: 1.4rem; color: #fff;">${title}</h3>
+                            <span id="details-price" style="font-size: 1.4rem; color: var(--color-cta); font-weight: bold;">${price}</span>
+                        </div>
+                        <p id="details-seller" style="font-size: 0.9rem; color: #888; margin-bottom: 1.5rem;">Sold by @${seller}</p>
+                        
+                        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; border-left: 3px solid var(--color-cta);">
+                            <h4 style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; opacity: 0.6;">Description</h4>
+                            <p id="details-description" style="line-height: 1.6; font-size: 0.95rem; color: rgba(255,255,255,0.8);"></p>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="padding-top: 1rem; display: flex; gap: 10px;">
+                        <button class="btn btn-primary btn-full" onclick="addToCartFromRebirth('${title.replace(/'/g, "\\'")}', '${price}', '${image}')">
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        detailsModal = document.getElementById('details-modal');
+
+        document.getElementById('close-details-modal').onclick = () => detailsModal.classList.remove('active');
+        detailsModal.onclick = (e) => { if (e.target === detailsModal) detailsModal.classList.remove('active'); };
+    } else {
+        // Update existing
+        document.getElementById('details-image').src = image;
+        document.getElementById('details-title').textContent = title;
+        document.getElementById('details-price').textContent = price;
+        document.getElementById('details-seller').textContent = `Sold by @${seller}`;
+    }
+
+    // Description can have HTML (<br>), so use innerHTML
+    document.getElementById('details-description').innerHTML = description;
+    detailsModal.classList.add('active');
 }
 
 
