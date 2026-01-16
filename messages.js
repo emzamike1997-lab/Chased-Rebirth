@@ -513,6 +513,7 @@ function createMessagesModal() {
             --msg-text-sec: rgba(255,255,255,0.5);
             --msg-btn-color: #fff;
             --msg-shadow: rgba(0,0,0,0.5);
+            --msg-chat-bg: url('assets/chat_bg.jpg');
         }
 
         #messages-modal.light-theme {
@@ -527,6 +528,7 @@ function createMessagesModal() {
             --msg-text-sec: #f5e6d3; /* Light cream for secondary text */
             --msg-btn-color: #ffd4a3; /* Warm peach for buttons on dark header */
             --msg-shadow: rgba(0,0,0,0.2);
+            --msg-chat-bg: url('assets/mountain_sunset_hd.png');
         }
 
         .messages-modal-content {
@@ -597,7 +599,7 @@ function createMessagesModal() {
         /* --- Chat View --- */
         .chat-messages {
             flex: 1; overflow-y: auto; padding: 15px; 
-            background: url('assets/chat_bg.jpg') no-repeat center center; 
+            background: var(--msg-chat-bg) no-repeat center center; 
             background-size: cover; 
             display: flex; flex-direction: column;
             position: relative;
