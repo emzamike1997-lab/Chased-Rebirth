@@ -57,25 +57,36 @@ async function renderConversationList(conversations, currentUserId) {
         return;
     }
 
-    // We can fetch names here or just use generic roles for list view. 
-    // To keep it fast, we use generic roles here, but names in Chat Window.
-
-    conversations.forEach(conv => {
+    // Fetch user names for all participants
+    for (const conv of conversations) {
         const isBuyer = conv.buyer_id === currentUserId;
+        const otherUserId = isBuyer ? conv.seller_id : conv.buyer_id;
         const role = isBuyer ? "Seller" : "Buyer";
+
+        // Try to fetch the other user's email/name
+        let displayName = role; // Fallback
+        try {
+            const { data: userData } = await supabaseClient.auth.admin.getUserById(otherUserId);
+            if (userData?.user?.email) {
+                displayName = userData.user.email.split('@')[0]; // Use email username
+            }
+        } catch (err) {
+            // If we can't fetch user data, try getting from metadata or use role
+            console.log('Could not fetch user name, using role');
+        }
 
         const itemHTML = `
             <div class="conversation-item" onclick="openChat('${conv.id}', '${conv.item_title || 'Item Inquiry'}')">
                 <div class="conv-avatar"><i class="fas fa-user"></i></div>
                 <div class="conv-details">
-                    <h4>${conv.item_title || 'Item Inquiry'}</h4>
-                    <p>Chat with ${role}</p>
+                    <h4>${displayName}</h4>
+                    <p>${conv.item_title || 'Item Inquiry'}</p>
                 </div>
                 <div class="conv-arrow"><i class="fas fa-chevron-right"></i></div>
             </div>
         `;
         list.insertAdjacentHTML('beforeend', itemHTML);
-    });
+    }
 }
 
 // --- THEME LOGIC ---
