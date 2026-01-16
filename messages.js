@@ -67,8 +67,10 @@ async function renderConversationList(conversations, currentUserId) {
         let displayName = role; // Fallback
         try {
             const { data: userData } = await supabaseClient.auth.admin.getUserById(otherUserId);
-            if (userData?.user?.email) {
-                displayName = userData.user.email.split('@')[0]; // Use email username
+            if (userData?.user?.user_metadata?.full_name) {
+                displayName = userData.user.user_metadata.full_name;
+            } else if (userData?.user?.email) {
+                displayName = userData.user.email.split('@')[0]; // Fallback to email username
             }
         } catch (err) {
             // If we can't fetch user data, try getting from metadata or use role
