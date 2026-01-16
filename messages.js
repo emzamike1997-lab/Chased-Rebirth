@@ -8,11 +8,9 @@ let activeReplyId = null;
 let activeParticipants = {};
 
 // Calling Variables
-let peer = null;
-let currentCall = null;
-let localStream = null;
-let callTimerInterval = null;
 let callStartTime = null;
+let isPeerInitializing = false;
+let peerHeartbeatInterval = null;
 
 // Dynamically Load PeerJS
 (function loadPeerJS() {
@@ -362,11 +360,11 @@ function subscribeToMessages(conversationId, currentUserId, buyerId, sellerId) {
 
 async function sendMessage(contentOverride = null, voiceMetadata = null) {
     const input = document.getElementById('chat-input');
-    const content = (contentOverride || input.value).trim();
+    const content = (contentOverride || (input ? input.value : "")).trim();
     if (!content || !activeConversationId) return;
 
     const { data: { user } } = await supabaseClient.auth.getUser();
-    input.value = '';
+    if (input) input.value = '';
     const replyId = activeReplyId;
     activeReplyId = null;
     hideReplyUI();
@@ -461,79 +459,96 @@ async function handleFileSelect(event) {
 
 // 6. Calling Implementation
 async function initPeer() {
+    if (isPeerInitializing) return;
+
     // Check if PeerJS is loaded
     if (typeof Peer === 'undefined') {
-        console.log('PeerJS not loaded yet. Waiting...');
         setTimeout(initPeer, 500);
         return;
     }
 
     const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) {
-        console.log('No user logged in. Peer initialization skipped.');
-        return;
-    }
+    if (!user) return;
 
-    // If peer already exists and is connected, don't recreate
-    if (peer && !peer.destroyed) {
-        console.log('Peer already initialized and active.');
-        return;
-    }
+    if (peer && !peer.destroyed && peer.open) return peer;
 
-    console.log('Initializing peer connection for user:', user.id);
-    ensureCallUIInjected();
+    return new Promise((resolve, reject) => {
+        isPeerInitializing = true;
+        console.log('CHASED: Initializing peer for', user.id);
 
-    // ICE Servers for global connectivity bypassing NAT/Firewalls
-    const config = {
-        host: '0.peerjs.com',
-        port: 443,
-        secure: true,
-        debug: 1,
-        config: {
-            'iceServers': [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun2.l.google.com:19302' },
-                { urls: 'stun:stun3.l.google.com:19302' },
-                { urls: 'stun:stun4.l.google.com:19302' }
-            ],
-            'sdpSemantics': 'unified-plan'
-        }
-    };
-
-    peer = new Peer(user.id, config);
-
-    peer.on('open', (id) => {
-        console.log('✅ Peer connected! Ready to receive calls. ID:', id);
-    });
-
-    peer.on('call', async (incomingCall) => {
-        console.log('📞 Incoming call received from:', incomingCall.peer);
         ensureCallUIInjected();
 
-        // Try to identify caller
-        let callerName = activeParticipants[incomingCall.peer] || "Someone";
-        if (callerName === "Someone") {
-            try {
-                const { data } = await supabaseClient.from('conversations')
-                    .select('buyer_name, seller_name, buyer_id, seller_id')
-                    .or(`buyer_id.eq.${incomingCall.peer},seller_id.eq.${incomingCall.peer}`)
-                    .limit(1)
-                    .single();
-                if (data) callerName = (data.buyer_id === incomingCall.peer) ? data.buyer_name : data.seller_name;
-            } catch (e) { }
-        }
+        const config = {
+            debug: 3, // Full logs for debugging
+            config: {
+                'iceServers': [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' },
+                    { urls: 'stun:stun2.l.google.com:19302' },
+                    { urls: 'stun:stun3.l.google.com:19302' },
+                    { urls: 'stun:stun4.l.google.com:19302' }
+                ],
+                'iceTransportPolicy': 'all'
+            }
+        };
 
-        showIncomingCallUI(incomingCall, callerName);
+        if (peer) peer.destroy();
+        peer = new Peer(user.id, config);
+
+        peer.on('open', (id) => {
+            console.log('✅ Peer ID established:', id);
+            isPeerInitializing = false;
+            startPeerHeartbeat();
+            resolve(peer);
+        });
+
+        peer.on('error', (err) => {
+            console.error('❌ Peer error:', err);
+            isPeerInitializing = false;
+            if (err.type === 'unavailable-id') {
+                console.warn('ID already in use - likely another tab open.');
+            } else if (err.type === 'peer-unavailable') {
+                console.log("Peer unavailable. Maintaining 'Reaching...' state.");
+            }
+            reject(err);
+        });
+
+        peer.on('disconnected', () => {
+            console.warn('Peer disconnected. Attempting to reconnect...');
+            peer.reconnect();
+        });
+
+        peer.on('call', async (incomingCall) => {
+            console.log('📞 INCOMING CALL from:', incomingCall.peer);
+            ensureCallUIInjected();
+            currentCall = incomingCall; // Store globally for the receiver
+
+            let callerName = activeParticipants[incomingCall.peer] || "Someone";
+            if (callerName === "Someone") {
+                try {
+                    const { data } = await supabaseClient.from('conversations')
+                        .select('buyer_name, seller_name, buyer_id, seller_id')
+                        .or(`buyer_id.eq.${incomingCall.peer},seller_id.eq.${incomingCall.peer}`)
+                        .limit(1)
+                        .single();
+                    if (data) callerName = (data.buyer_id === incomingCall.peer) ? data.buyer_name : data.seller_name;
+                } catch (e) { }
+            }
+            showIncomingCallUI(incomingCall, callerName);
+        });
     });
-    peer.on('error', (err) => {
-        console.error('Peer error:', err);
-        if (err.type === 'peer-unavailable') {
-            console.log("Peer unavailable. Maintaining 'Reaching...' state.");
-        } else if (err.type === 'unavailable-id') {
-            console.error('Peer ID already in use. This may indicate multiple tabs open.');
+}
+
+function startPeerHeartbeat() {
+    if (peerHeartbeatInterval) clearInterval(peerHeartbeatInterval);
+    peerHeartbeatInterval = setInterval(() => {
+        if (peer && !peer.destroyed && peer.open) {
+            // Keep connection alive
+            peer.socket.send({ type: 'HEARTBEAT' });
+        } else if (peer && peer.disconnected) {
+            peer.reconnect();
         }
-    });
+    }, 20000);
 }
 
 function ensureCallUIInjected() {
@@ -623,12 +638,22 @@ function showIncomingCallUI(incomingCall, callerName) {
 
 function declineCall(callerId) {
     stopRingtone();
-    if (currentCall) currentCall.close();
+    if (currentCall) {
+        currentCall.close();
+        currentCall = null;
+    }
     document.getElementById('call-overlay').style.display = 'none';
 }
 
 async function startCall(otherId, name) {
-    if (!peer) await initPeer();
+    if (!peer || !peer.open) {
+        await initPeer().catch(e => console.error("Peer init failed:", e));
+    }
+
+    if (!peer || !peer.open) {
+        alert("System not ready for calls. Please refresh.");
+        return;
+    }
 
     try {
         localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
