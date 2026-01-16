@@ -230,12 +230,33 @@ function renderMessages(messages, currentUserId, buyerId, sellerId) {
         let nameDisplay = activeParticipants[msg.sender_id] || (isSenderBuyer ? "Buyer" : "Seller");
         if (isMe) nameDisplay = "Me";
 
+        let contentHTML = `<div class="message-content">${msg.content}</div>`;
+
+        // Render Voice Player if metadata exists
+        if (msg.voice_metadata && msg.voice_metadata.is_voice) {
+            const duration = msg.voice_metadata.duration || "0:00";
+            contentHTML = `
+                <div class="voice-player">
+                    <button class="voice-play-btn" onclick="playVoiceMessage('${msg.id}')">
+                        <i class="fas fa-play" id="play-icon-${msg.id}"></i>
+                    </button>
+                    <div class="voice-info">
+                        <div class="voice-wave-visual">
+                            <span></span><span></span><span></span><span></span><span></span>
+                        </div>
+                        <span class="voice-duration">${duration}</span>
+                    </div>
+                </div>
+                <audio id="audio-${msg.id}" src="${msg.content.startsWith('data:audio') ? msg.content : ''}" style="display:none;"></audio>
+            `;
+        }
+
         const msgHTML = `
             <div class="message-wrapper ${alignClass}">
                 <div class="message-sender-name">${nameDisplay}</div>
                 <div class="message ${styleClass}" onclick="triggerReply('${msg.id}', '${escapeHtml(msg.content)}')">
                     ${quoteHTML}
-                    <div class="message-content">${msg.content}</div>
+                    ${contentHTML}
                     <div class="message-meta">
                         <span class="message-time">${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         <span class="message-status">${statusIcon}</span>
@@ -245,6 +266,23 @@ function renderMessages(messages, currentUserId, buyerId, sellerId) {
         `;
         container.insertAdjacentHTML('beforeend', msgHTML);
     });
+}
+
+function playVoiceMessage(msgId) {
+    const audio = document.getElementById(`audio-${msgId}`);
+    const icon = document.getElementById(`play-icon-${msgId}`);
+    if (!audio || !audio.src) {
+        alert("This voice note is a placeholder and cannot be played.");
+        return;
+    }
+    if (audio.paused) {
+        audio.play();
+        icon.classList.replace('fa-play', 'fa-pause');
+        audio.onended = () => icon.classList.replace('fa-pause', 'fa-play');
+    } else {
+        audio.pause();
+        icon.classList.replace('fa-pause', 'fa-play');
+    }
 }
 
 function subscribeToMessages(conversationId, currentUserId, buyerId, sellerId) {
@@ -264,7 +302,7 @@ function subscribeToMessages(conversationId, currentUserId, buyerId, sellerId) {
             }).subscribe();
 }
 
-async function sendMessage(contentOverride = null) {
+async function sendMessage(contentOverride = null, voiceMetadata = null) {
     const input = document.getElementById('chat-input');
     const content = (contentOverride || input.value).trim();
     if (!content || !activeConversationId) return;
@@ -279,7 +317,8 @@ async function sendMessage(contentOverride = null) {
         conversation_id: activeConversationId,
         sender_id: user.id,
         content: content,
-        reply_to_id: replyId
+        reply_to_id: replyId,
+        voice_metadata: voiceMetadata || {}
     });
 
     if (error) {
@@ -294,36 +333,66 @@ async function sendMessage(contentOverride = null) {
 let mediaRecorder;
 let audioChunks = [];
 let isRecording = false;
+let recordingStartTime;
+let timerInterval;
 
 async function toggleRecording() {
     const btn = document.getElementById('voice-rec-btn');
     const input = document.getElementById('chat-input');
+    const timerDisplay = document.getElementById('recording-timer');
+    const waves = document.getElementById('recording-waves');
 
     if (!isRecording) {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             mediaRecorder = new MediaRecorder(stream);
             audioChunks = [];
+
             mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-            mediaRecorder.onstop = () => {
-                console.log("Audio captured.");
-                sendMessage("🎤 Voice Message Recorded");
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const reader = new FileReader();
+                reader.readAsDataURL(audioBlob);
+                reader.onloadend = () => {
+                    const base64Audio = reader.result;
+                    const durationInSeconds = Math.round((Date.now() - recordingStartTime) / 1000);
+                    const minutes = Math.floor(durationInSeconds / 60);
+                    const seconds = durationInSeconds % 60;
+                    const durationStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+                    sendMessage(base64Audio, { is_voice: true, duration: durationStr });
+                };
                 stream.getTracks().forEach(t => t.stop());
             };
+
+            recordingStartTime = Date.now();
             mediaRecorder.start();
             isRecording = true;
             btn.classList.add('recording');
-            input.placeholder = "Recording...";
-            input.disabled = true;
+            input.style.display = 'none';
+            timerDisplay.style.display = 'block';
+            waves.style.display = 'flex';
+
+            timerInterval = setInterval(() => {
+                const elapsed = Math.round((Date.now() - recordingStartTime) / 1000);
+                const m = Math.floor(elapsed / 60);
+                const s = elapsed % 60;
+                timerDisplay.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+            }, 1000);
+
         } catch (err) {
             alert("Mic access denied.");
         }
     } else {
         if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
         isRecording = false;
+        clearInterval(timerInterval);
         btn.classList.remove('recording');
+        input.style.display = 'block';
+        timerDisplay.style.display = 'none';
+        timerDisplay.textContent = '0:00';
+        waves.style.display = 'none';
         input.placeholder = "Type a message...";
-        input.disabled = false;
     }
 }
 
@@ -390,7 +459,13 @@ function createMessagesModal() {
                 <div class="chat-input-area">
                     <button class="attach-btn" onclick="document.getElementById('file-input').click()"><i class="fas fa-plus"></i></button>
                     <input type="file" id="file-input" style="display:none" accept="image/*" onchange="handleFileSelect(event)">
-                    <input type="text" id="chat-input" placeholder="Type a message...">
+                    <div id="recording-status" style="flex: 1; display: flex; align-items: center; gap: 10px;">
+                        <input type="text" id="chat-input" placeholder="Type a message...">
+                        <div id="recording-timer" style="display:none; color: #ff4b2b; font-weight: bold; font-family: monospace;">0:00</div>
+                        <div id="recording-waves" class="voice-waves" style="display:none;">
+                            <span></span><span></span><span></span><span></span><span></span>
+                        </div>
+                    </div>
                     <button class="voice-rec-btn" id="voice-rec-btn" onclick="toggleRecording()"><i class="fas fa-microphone"></i></button>
                     <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
                 </div>
@@ -458,6 +533,22 @@ function createMessagesModal() {
         .voice-rec-btn.recording { background: #ff4b2b; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,75,43,0.7); } 70% { box-shadow: 0 0 0 10px rgba(255,75,43,0); } 100% { box-shadow: 0 0 0 0 rgba(255,75,43,0); } }
         .reply-bar { display: none; background: rgba(0,0,0,0.5); padding: 5px 15px; border-left: 3px solid var(--color-cta); color: #fff; font-size: 0.8rem; justify-content: space-between; }
+        
+        .voice-waves { display: flex; align-items: center; gap: 3px; height: 20px; }
+        .voice-waves span { width: 3px; height: 100%; background: #ff4b2b; border-radius: 3px; animation: wave 0.5s ease-in-out infinite; }
+        .voice-waves span:nth-child(2) { animation-delay: 0.1s; }
+        .voice-waves span:nth-child(3) { animation-delay: 0.2s; }
+        .voice-waves span:nth-child(4) { animation-delay: 0.3s; }
+        .voice-waves span:nth-child(5) { animation-delay: 0.4s; }
+        @keyframes wave { 0%, 100% { height: 5px; } 50% { height: 20px; } }
+
+        .voice-player { display: flex; align-items: center; gap: 15px; padding: 5px 0; }
+        .voice-play-btn { width: 35px; height: 35px; border-radius: 50%; border: none; background: var(--color-cta); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; }
+        .voice-play-btn:hover { transform: scale(1.1); }
+        .voice-info { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+        .voice-wave-visual { display: flex; align-items: center; gap: 2px; height: 15px; opacity: 0.5; }
+        .voice-wave-visual span { width: 2px; height: 5px; background: #fff; border-radius: 2px; }
+        .voice-duration { font-size: 0.75rem; color: rgba(255,255,255,0.7); font-family: monospace; }
     </style>
     `;
     document.body.insertAdjacentHTML('beforeend', html);
