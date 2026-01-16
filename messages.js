@@ -399,12 +399,13 @@ function createMessagesModal() {
     </div>
     <style>
         #messages-modal {
-            --msg-bg: #000; --msg-text: #fff; --msg-header-bg: #000;
+            --msg-bg: url('assets/dark_chat_bg.png') no-repeat center center / cover;
+            --msg-text: #fff; --msg-header-bg: #000;
             --msg-border: rgba(255,255,255,0.1); --msg-item-hover: rgba(255,255,255,0.08);
             --msg-input-bg: rgba(20, 20, 20, 0.95); --msg-input-field: rgba(255,255,255,0.05);
             --msg-input-text: #fff; --msg-text-sec: rgba(255,255,255,0.5);
             --msg-btn-color: #fff; --msg-shadow: rgba(0,0,0,0.5);
-            --msg-chat-bg: url('assets/dark_chat_bg.png');
+            --msg-chat-bg: url('assets/chat_bg.jpg');
         }
         #messages-modal.light-theme {
             --msg-bg: url('assets/light_bg.jpg') no-repeat center center / cover;
